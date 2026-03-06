@@ -7,6 +7,8 @@
   ],
   "devDependencies": {
     "concurrently": "^9.2.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.3.2",
     "prettier": "^3.8.1",
     "typescript-eslint": "^8.56.1"
   },
@@ -17,6 +19,18 @@
     "dev:ios": "npm -w mobile run ios",
     "dev:android": "npm -w mobile run android",
     "format": "prettier . --write",
-    "format:check": "prettier . --check"
+    "lint": "npm run lint -w backend && npm run lint -w mobile",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,json,md}": [
+      "prettier --write"
+    ],
+    "backend/**/*.{ts,js}": [
+      "npm run lint -w backend --"
+    ],
+    "mobile/**/*.{ts,tsx,js}": [
+      "npm run lint -w mobile --"
+    ]
   }
 }
