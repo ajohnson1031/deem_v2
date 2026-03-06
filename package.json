@@ -19,6 +19,7 @@
     "dev:ios": "npm -w mobile run ios",
     "dev:android": "npm -w mobile run android",
     "format": "prettier . --write",
+    "format:check": "prettier . --check",
     "lint": "npm run lint -w backend && npm run lint -w mobile",
     "prepare": "husky"
   },

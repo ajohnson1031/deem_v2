@@ -1,25 +1,52 @@
 # Dependencies
 node_modules/
-/.pnp
+.pnp
 .pnp.js
+
+# Docs / local generated docs
 /_docs
 
 # Environment variables
 .env
 .env.local
 .env.*.local
+.env*.local
 
 # Build outputs
 dist/
 build/
+web-build/
 *.tsbuildinfo
+
+# Expo / React Native
+.expo/
+.expo-shared/
+expo-env.d.ts
+.metro-health-check*
+
+# Generated native folders
+ios/
+android/
+.kotlin/
+
+# Native / signing / local mobile artifacts
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
 
 # Logs
 logs/
 *.log
 npm-debug.log*
+npm-debug.*
 yarn-debug.log*
+yarn-debug.*
 yarn-error.log*
+yarn-error.*
 
 # Runtime data
 pids/
@@ -33,11 +60,11 @@ pids/
 *.swp
 *.swo
 *~
-.DS_Store
 *.sublime-project
 *.sublime-workspace
 
 # OS
+.DS_Store
 Thumbs.db
 .env.*.swp
 
@@ -59,3 +86,6 @@ docker-compose.override.yml
 yarn.lock
 pnpm-lock.yaml
 package-lock.json
+
+# App examples / local playgrounds
+app-example

@@ -1,50 +1,395 @@
-# Welcome to your Expo app 👋
+# Deem Mobile App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+The mobile app provides the user interface for Deem.
 
-## Get started
+It allows users to:
 
-1. Install dependencies
+- sign in
+- add gift cards
+- check balances
+- generate conversion quotes
+- convert gift card balances into XRP
+- link a bank account
+- monitor conversion progress
+- view receipts
 
-   ```bash
-   npm install
-   ```
+The mobile app is built with **Expo Router** and **React Native**.
 
-2. Start the app
+---
 
-   ```bash
-   npx expo start
-   ```
+# Tech Stack
 
-In the output, you'll find options to open the app in a
+- React Native
+- Expo
+- Expo Router
+- TypeScript
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+# Project Structure
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+mobile/
+  app/
+  src/
+    api/
+    components/
+    features/
+    hooks/
+    lib/
+    state/
+  package.json
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-## Learn more
+# Routing
 
-To learn more about developing your project with Expo, look at the following resources:
+Routing is handled using **Expo Router**.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```
+app/
+```
 
-## Join the community
+Examples:
 
-Join our community of developers creating universal apps.
+```
+(app)/
+  index.tsx
+  add-card.tsx
+  quote-confirm.tsx
+  conversions/[id].tsx
+  receipt/[id].tsx
+  bank/link.tsx
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+---
+
+# App Flow
+
+Typical user flow:
+
+1. Sign in
+2. Land on Home
+3. Tap Add Card
+4. Enter card details
+5. Check balance
+6. Generate quote
+7. Confirm conversion
+8. Monitor conversion progress
+9. Link bank if required
+10. View receipt
+11. Return home
+
+---
+
+# Source Code Structure
+
+```
+src/
+```
+
+---
+
+# API Layer
+
+Located in:
+
+```
+src/api/
+```
+
+Each module maps to backend endpoints.
+
+Examples:
+
+```
+activity.ts
+banks.ts
+conversions.ts
+giftCards.ts
+quotes.ts
+wallet.ts
+```
+
+---
+
+# Components
+
+Shared UI components live in:
+
+```
+src/components/
+```
+
+Examples:
+
+- ScreenHeader
+- SectionCard
+- PrimaryButton
+- SecondaryAction
+
+These components provide consistent layout and styling.
+
+---
+
+# Features
+
+Feature-specific code lives in:
+
+```
+src/features/
+```
+
+Examples:
+
+## Activity
+
+```
+src/features/activity/
+```
+
+Responsible for:
+
+- activity formatting
+- activity cards
+
+---
+
+## Conversions
+
+```
+src/features/conversions/
+```
+
+Responsible for:
+
+- conversion timeline
+- progress UI
+- status formatting
+
+---
+
+## Quotes
+
+```
+src/features/quotes/
+```
+
+Responsible for:
+
+- quote amount formatting
+- quote helpers
+
+---
+
+## Gift Cards
+
+```
+src/features/giftCards/
+```
+
+Responsible for gift card flow helpers.
+
+---
+
+# Hooks
+
+Reusable hooks live in:
+
+```
+src/hooks/
+```
+
+Example:
+
+```
+useConversionTimeline.ts
+```
+
+This hook polls the backend timeline endpoint.
+
+---
+
+# Shared Libraries
+
+Utilities live in:
+
+```
+src/lib/
+```
+
+Examples:
+
+- API fetch wrapper
+- shared contracts
+- formatting helpers
+- error translation
+
+---
+
+# State Management
+
+Authentication state lives in:
+
+```
+src/state/auth.tsx
+```
+
+Responsible for:
+
+- storing auth token
+- providing auth context
+
+---
+
+# Shared Contracts
+
+Types for API responses live in:
+
+```
+src/lib/contracts.ts
+```
+
+These define:
+
+- wallet balance responses
+- activity feed items
+- gift card responses
+- quote responses
+- conversion responses
+- bank accounts
+- timeline events
+
+---
+
+# Error Handling
+
+Error translation lives in:
+
+```
+src/lib/errors.ts
+```
+
+Backend error codes are converted into user-friendly messages.
+
+Examples:
+
+- QUOTE_EXPIRED
+- LIMIT_DAILY_EXCEEDED
+- KYC_REQUIRED
+- BANK_ACCOUNT_NOT_FOUND
+
+---
+
+# Formatting
+
+Formatting helpers live in:
+
+```
+src/lib/format.ts
+```
+
+Examples:
+
+- formatUsd
+- formatXrp
+- prettifyStatus
+- formatDateTime
+
+These helpers are reused across features.
+
+---
+
+# Running the App
+
+From the repo root:
+
+```
+npm run dev -w mobile
+```
+
+Or inside the mobile directory:
+
+```
+npm run dev
+```
+
+Expo will start the development server.
+
+---
+
+# API Base URL
+
+The mobile app dynamically selects the API base URL.
+
+Typical values:
+
+iOS Simulator:
+
+```
+http://localhost:4000
+```
+
+Android Emulator:
+
+```
+http://10.0.2.2:4000
+```
+
+Physical device:
+
+```
+http://<LAN_IP>:4000
+```
+
+Example:
+
+```
+http://192.168.1.78:4000
+```
+
+---
+
+# Development Workflow
+
+Typical workflow:
+
+1. start backend
+2. start mobile app
+3. run conversion flow
+4. inspect timeline updates
+5. adjust UI
+6. commit changes
+
+---
+
+# Linting
+
+Run lint:
+
+```
+npm run lint
+```
+
+---
+
+# Formatting
+
+Formatting is managed by the root workspace.
+
+```
+npm run format
+```
+
+---
+
+# Future Improvements
+
+Potential future improvements include:
+
+- automated UI tests
+- conversion retry UI
+- improved bank linking UX
+- enhanced activity filtering
+- offline support
