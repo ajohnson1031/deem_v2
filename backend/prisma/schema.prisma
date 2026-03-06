@@ -1,0 +1,206 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum KycStatus {
+  NOT_STARTED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum GiftCardType {
+  OPEN_LOOP
+  STORE
+}
+
+enum GiftCardStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum BankAccountStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum ConversionStatus {
+  CREATED
+  BALANCE_VERIFIED
+  QUOTED
+  USER_CONFIRMED
+  VALUE_CAPTURE_PENDING
+  VALUE_CAPTURED
+  XRP_PURCHASE_PENDING
+  XRP_PURCHASED
+  OFFRAMP_PENDING
+  PAYOUT_PENDING
+  COMPLETED
+  FAILED
+  CANCELED
+}
+
+model User {
+  id         String    @id
+  email      String?   @unique
+  phone      String?   @unique
+  kycStatus  KycStatus @default(NOT_STARTED)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  wallet     Wallet?
+  giftCards   GiftCard[]
+  bankAccounts BankAccount[]
+  quotes      Quote[]
+  conversions Conversion[]
+  balanceChecks GiftCardBalanceCheck[]
+}
+
+model GiftCard {
+  id        String         @id
+  userId    String
+  type      GiftCardType
+  brand     String?
+  last4     String?
+  tokenRef  String?        // reference to tokenized PAN/CVV in provider vault
+  status    GiftCardStatus @default(ACTIVE)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  user      User           @relation(fields: [userId], references: [id])
+  quotes    Quote[]
+  conversions Conversion[]
+  balanceChecks GiftCardBalanceCheck[]
+}
+
+model BankAccount {
+  id          String            @id
+  userId      String
+  provider    String            // e.g. "plaid"
+  providerRef String            // provider object id
+  last4       String?
+  status      BankAccountStatus @default(ACTIVE)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  user        User              @relation(fields: [userId], references: [id])
+  conversions Conversion[]
+}
+
+model Quote {
+  id            String   @id
+  userId        String
+  giftCardId    String
+  balanceUsd    Int      // store cents
+  feeBreakdown  Json
+  rate          Decimal  // XRP per USD or USD per XRP (pick one, document it)
+  xrpEstimate   Decimal
+  expiresAt     DateTime
+  createdAt     DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id])
+  giftCard   GiftCard @relation(fields: [giftCardId], references: [id])
+
+  conversions Conversion[]
+}
+
+model Conversion {
+  id              String           @id
+  userId          String
+  giftCardId      String
+  bankAccountId   String?
+  quoteId         String?
+
+  sourceAmountUsd Int              // cents
+  feesUsd         Int              // cents
+  xrpAmount       Decimal?
+  status          ConversionStatus @default(CREATED)
+
+  failureReason   String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  user        User        @relation(fields: [userId], references: [id])
+  giftCard    GiftCard    @relation(fields: [giftCardId], references: [id])
+  bankAccount BankAccount? @relation(fields: [bankAccountId], references: [id])
+  quote       Quote?      @relation(fields: [quoteId], references: [id])
+
+  events      ConversionEvent[]
+}
+
+model ConversionEvent {
+  id           String   @id
+  conversionId String
+  type         String   // e.g. "STATUS_CHANGED", "PROVIDER_CALL", "ERROR"
+  payload      Json
+  createdAt    DateTime @default(now())
+
+  conversion   Conversion @relation(fields: [conversionId], references: [id])
+
+  @@index([conversionId, createdAt])
+}
+
+model IdempotencyKey {
+  key         String   @id
+  userId      String
+  route       String
+  requestHash String
+  response    Json
+  createdAt   DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+enum LedgerEntryType {
+  CREDIT
+  DEBIT
+}
+
+enum LedgerRefType {
+  CONVERSION
+  MANUAL
+}
+
+model Wallet {
+  id        String   @id
+  userId    String   @unique
+  xrpDrops  BigInt   @default(0) // cached balance in drops
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id])
+  entries   LedgerEntry[]
+}
+
+model LedgerEntry {
+  id        String         @id
+  walletId  String
+  type      LedgerEntryType
+  refType   LedgerRefType
+  refId     String
+  amountDrops BigInt
+  createdAt DateTime       @default(now())
+
+  wallet    Wallet         @relation(fields: [walletId], references: [id])
+
+  @@index([walletId, createdAt])
+  @@unique([walletId, refType, refId, type]) // idempotency key
+}
+
+model GiftCardBalanceCheck {
+  id         String   @id
+  userId     String
+  giftCardId String
+  ok         Boolean
+  reason     String?
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id])
+  giftCard   GiftCard @relation(fields: [giftCardId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([giftCardId, createdAt])
+}
