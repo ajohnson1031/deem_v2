@@ -2,19 +2,12 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo } from "react";
 import { ActivityIndicator, FlatList, Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
 
-import {
-  MostRecentUpdateCard,
-  ProgressBar,
-  StepRow,
-  TimelineCard,
-  buildProgressSteps,
-  estimateRemainingMs,
-  formatDurationMs,
-  formatUsd,
-  prettifyStatus,
-} from "@/src/features/conversions";
 import { useConversionTimeline } from "@/src/hooks/useConversionTimeline";
 import { useAuth } from "@/src/state/auth";
+
+import { MostRecentUpdateCard, ProgressBar, StepRow, TimelineCard } from "@/src/features/conversions/components";
+import { estimateRemainingMs, formatDurationMs, formatUsd, prettifyStatus } from "@/src/features/conversions/formatters";
+import { buildProgressSteps } from "@/src/features/conversions/progress";
 
 export default function ConversionStatusScreen() {
   const router = useRouter();
@@ -30,7 +23,7 @@ export default function ConversionStatusScreen() {
   });
 
   const conversion = data?.conversion;
-  const timeline = useMemo(() => data?.timeline ?? [], [data?.timeline]);
+  const timeline = data?.timeline ?? [];
 
   const steps = useMemo(() => buildProgressSteps(conversion, timeline), [conversion, timeline]);
 

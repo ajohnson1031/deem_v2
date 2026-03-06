@@ -1,44 +1,7 @@
-import { apiFetch } from "@/src/lib/api";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export type Money = { cents: number; currency: "USD" };
-
-export type ConversionWithUi = {
-  id: string;
-  status: string;
-
-  // UI fields (spread into conversion by backend)
-  displayStatus: string;
-  displaySubtitle?: string | null;
-  processingPercent?: number | null;
-  requiresBank?: boolean;
-  isTerminal?: boolean;
-
-  createdAt: string;
-  updatedAt: string;
-
-  sourceAmount: Money;
-  fees: Money;
-  netAmount: Money;
-
-  xrpAmount?: number | null;
-  failureReason?: string | null;
-};
-
-export type ConversionTimelineItem = {
-  id: string;
-  type: string;
-  at: string;
-
-  // normalizedEvent() output varies by kind; keep flexible
-  kind: string;
-  [key: string]: any;
-};
-
-export type ConversionTimelineResponse = {
-  conversion: ConversionWithUi;
-  timeline: ConversionTimelineItem[];
-};
+import { getConversionTimeline } from "@/src/api";
+import type { ConversionTimelineResponse } from "@/src/lib/contracts";
 
 type Options = {
   token: string;
@@ -63,7 +26,10 @@ export function useConversionTimeline({ token, conversionId, intervalMs = 1500, 
 
   const tick = useCallback(async () => {
     try {
-      const res = await apiFetch<ConversionTimelineResponse>(`/conversions/${conversionId}/timeline`, { method: "GET", token });
+      const res = await getConversionTimeline({
+        token,
+        conversionId,
+      });
 
       setData(res);
       setError(null);
