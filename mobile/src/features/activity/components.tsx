@@ -10,15 +10,7 @@ import {
   prettifyStatus,
 } from "./formatters";
 
-function formatDateTime(iso?: string | null) {
-  if (!iso) return "—";
-
-  try {
-    return new Date(iso).toLocaleString();
-  } catch {
-    return iso;
-  }
-}
+import { formatDateTime } from "@/src/lib/format";
 
 function getStatusTone(item: ActivityItem): "neutral" | "good" | "warn" | "bad" {
   if (item.failureReason || item.status === "FAILED") return "bad";

@@ -4,21 +4,8 @@ import { ActivityIndicator, SafeAreaView, ScrollView, Text, View } from "react-n
 import { PrimaryButton, ScreenHeader, SectionCard } from "@/src/components/ui";
 import { useConversionTimeline } from "@/src/hooks/useConversionTimeline";
 import type { ConversionTimelineItem } from "@/src/lib/contracts";
+import { formatDateTime, formatUsd, prettifyStatus } from "@/src/lib/format";
 import { useAuth } from "@/src/state/auth";
-
-function formatUsd(cents?: number | null) {
-  if (typeof cents !== "number") return "—";
-  return `$${(cents / 100).toFixed(2)}`;
-}
-
-function prettifyStatus(status?: string | null) {
-  if (!status) return "Unknown";
-  return status
-    .toLowerCase()
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
 
 function findBankLabelFromTimeline(timeline: ConversionTimelineItem[]) {
   const bankEvent = [...timeline].reverse().find((event) => event?.kind === "bank");
@@ -112,12 +99,10 @@ export default function ReceiptScreen() {
                   Bank destination: {bankLabel ?? "Not attached"}
                 </Text>
                 <Text style={{ marginTop: 6, opacity: 0.85 }}>
-                  Created:{" "}
-                  {conversion?.createdAt ? new Date(conversion.createdAt).toLocaleString() : "—"}
+                  Created: {formatDateTime(conversion?.createdAt)}
                 </Text>
                 <Text style={{ marginTop: 6, opacity: 0.85 }}>
-                  Updated:{" "}
-                  {conversion?.updatedAt ? new Date(conversion.updatedAt).toLocaleString() : "—"}
+                  Updated: {formatDateTime(conversion?.updatedAt)}
                 </Text>
               </SectionCard>
 

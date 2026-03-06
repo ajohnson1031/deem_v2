@@ -7,13 +7,14 @@ export function formatXrp(xrp?: number | string | null) {
   if (xrp == null) return "—";
 
   const n = typeof xrp === "string" ? Number(xrp) : xrp;
+
   if (!Number.isFinite(n)) return String(xrp);
 
   return `${n.toFixed(2)} XRP`;
 }
 
-export function prettifyStatus(status?: string | null) {
-  if (!status) return "Unknown";
+export function prettifyStatus(status?: string | null, fallback = "Unknown") {
+  if (!status) return fallback;
 
   return status
     .toLowerCase()
@@ -29,5 +30,13 @@ export function formatDateTime(iso?: string | null) {
     return new Date(iso).toLocaleString();
   } catch {
     return iso;
+  }
+}
+
+export function safeJson(value: unknown) {
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return String(value);
   }
 }

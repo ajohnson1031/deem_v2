@@ -1,44 +1,22 @@
-export function formatUsd(cents?: number | null) {
-  if (typeof cents !== "number") return "—";
-  return `$${(cents / 100).toFixed(2)}`;
-}
+import { formatDateTime, formatUsd, prettifyStatus, safeJson } from "@/src/lib/format";
 
-export function prettifyStatus(status?: string | null) {
-  if (!status) return "Unknown";
-  return status
-    .toLowerCase()
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
+export { formatDateTime, formatUsd, prettifyStatus, safeJson };
 
 export function shortProviderName(provider?: string | null) {
   if (!provider) return "provider";
-  const p = provider.toLowerCase();
-  if (p.includes("mock")) return "provider";
-  if (p.includes("sandbox")) return "provider";
+
+  const normalized = provider.toLowerCase();
+
+  if (normalized.includes("mock")) return "provider";
+  if (normalized.includes("sandbox")) return "provider";
+
   return provider;
 }
 
-export function formatDateTime(iso?: string | null) {
-  if (!iso) return "—";
-  try {
-    return new Date(iso).toLocaleString();
-  } catch {
-    return iso;
-  }
-}
-
-export function safeJson(v: any) {
-  try {
-    return JSON.stringify(v, null, 2);
-  } catch {
-    return String(v);
-  }
-}
-
 export function formatDurationMs(ms: number | null) {
-  if (ms == null || !Number.isFinite(ms) || ms < 0) return "Calculating…";
+  if (ms == null || !Number.isFinite(ms) || ms < 0) {
+    return "Calculating…";
+  }
 
   const totalSeconds = Math.max(0, Math.round(ms / 1000));
   const mins = Math.floor(totalSeconds / 60);
@@ -49,6 +27,7 @@ export function formatDurationMs(ms: number | null) {
 
   const hours = Math.floor(mins / 60);
   const remMins = mins % 60;
+
   return `~${hours}h ${remMins}m remaining`;
 }
 

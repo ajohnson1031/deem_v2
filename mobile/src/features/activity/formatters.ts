@@ -1,47 +1,20 @@
 import type { ActivityItem } from "@/src/lib/contracts";
+import { formatUsd, formatXrp, prettifyStatus } from "@/src/lib/format";
 
-export function formatUsd(cents?: number | null) {
-  if (typeof cents !== "number") return "—";
-  return `$${(cents / 100).toFixed(2)}`;
-}
-
-export function formatXrp(xrp?: number | string | null) {
-  if (xrp == null) return "—";
-
-  const n = typeof xrp === "string" ? Number(xrp) : xrp;
-
-  if (!Number.isFinite(n)) return String(xrp);
-
-  return `${n.toFixed(2)} XRP`;
-}
-
-export function prettifyStatus(status?: string | null) {
-  if (!status) return "Status";
-
-  return status
-    .toLowerCase()
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
+export { formatUsd, formatXrp, prettifyStatus };
 
 export function getActivityTitle(item: ActivityItem) {
   if (item.title) return item.title;
-
   if (item.type === "conversion") return "Conversion";
-
   if (item.type === "payout") return "Payout";
-
   if (item.displayStatus) return item.displayStatus;
 
-  return prettifyStatus(item.status) || "Activity";
+  return prettifyStatus(item.status, "Activity");
 }
 
 export function getActivitySubtitle(item: ActivityItem) {
   if (item.subtitle) return item.subtitle;
-
   if (item.displaySubtitle) return item.displaySubtitle;
-
   if (item.failureReason) return item.failureReason;
 
   if (item.requiresBank && !item.isTerminal) {
