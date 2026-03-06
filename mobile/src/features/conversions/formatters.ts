@@ -52,7 +52,11 @@ export function formatDurationMs(ms: number | null) {
   return `~${hours}h ${remMins}m remaining`;
 }
 
-export function estimateRemainingMs(percent?: number | null, createdAt?: string | null, isTerminal?: boolean) {
+export function estimateRemainingMs(
+  percent?: number | null,
+  createdAt?: string | null,
+  isTerminal?: boolean,
+) {
   if (isTerminal) return 0;
   if (typeof percent !== "number") return null;
   if (percent <= 0 || percent >= 100) return null;

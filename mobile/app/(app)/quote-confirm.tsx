@@ -1,34 +1,27 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, FlatList, Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 import { createConversion, createQuote, getBankAccounts } from "@/src/api";
+import { PrimaryButton, ScreenHeader, SecondaryAction, SectionCard } from "@/src/components/ui";
+import {
+  centsFromUsdString,
+  formatUsdFromCents,
+  usdStringFromCents,
+} from "@/src/features/quotes/quoteConfirm";
 import type { BankAccountDto, QuoteResponse } from "@/src/lib/contracts";
 import { getAppErrorCopy } from "@/src/lib/errors";
 import { useAuth } from "@/src/state/auth";
-
-function centsFromUsdString(s: string) {
-  const clean = s.replace(/[^\d.]/g, "");
-  if (!clean) return 0;
-
-  const [dollars, frac = ""] = clean.split(".");
-  const frac2 = (frac + "00").slice(0, 2);
-
-  const n = parseInt(dollars || "0", 10) * 100 + parseInt(frac2 || "0", 10);
-
-  return Number.isFinite(n) ? n : 0;
-}
-
-function usdStringFromCents(cents: number) {
-  const d = Math.floor(cents / 100);
-  const c = String(cents % 100).padStart(2, "0");
-  return `${d}.${c}`;
-}
-
-function formatUsdFromCents(cents?: number | null) {
-  if (typeof cents !== "number") return "—";
-  return `$${(cents / 100).toFixed(2)}`;
-}
 
 export default function QuoteConfirmScreen() {
   const router = useRouter();
@@ -44,7 +37,9 @@ export default function QuoteConfirmScreen() {
   const giftCardId = params.giftCardId ?? "";
   const prefillCents = params.prefillCents ? parseInt(params.prefillCents, 10) : 0;
 
-  const [amountUsd, setAmountUsd] = useState(prefillCents ? usdStringFromCents(prefillCents) : "25.00");
+  const [amountUsd, setAmountUsd] = useState(
+    prefillCents ? usdStringFromCents(prefillCents) : "25.00",
+  );
 
   const [loadingQuote, setLoadingQuote] = useState(false);
   const [loadingConvert, setLoadingConvert] = useState(false);
@@ -63,8 +58,8 @@ export default function QuoteConfirmScreen() {
     setBanksLoading(true);
 
     try {
-      const res = await getBankAccounts({ token });
-      const list = Array.isArray(res) ? res : res.accounts;
+      const response = await getBankAccounts({ token });
+      const list = Array.isArray(response) ? response : response.accounts;
 
       setBanks(list ?? []);
 
@@ -107,7 +102,7 @@ export default function QuoteConfirmScreen() {
     setLoadingQuote(true);
 
     try {
-      const res = await createQuote({
+      const response = await createQuote({
         token,
         body: {
           giftCardId,
@@ -115,7 +110,7 @@ export default function QuoteConfirmScreen() {
         },
       });
 
-      setQuote(res);
+      setQuote(response);
     } catch (e: any) {
       const copy = getAppErrorCopy(e, "Quote failed");
       Alert.alert(copy.title, copy.message);
@@ -135,7 +130,7 @@ export default function QuoteConfirmScreen() {
     setLoadingConvert(true);
 
     try {
-      const res = await createConversion({
+      const response = await createConversion({
         token,
         body: {
           quoteId: quote.quote.id,
@@ -145,7 +140,7 @@ export default function QuoteConfirmScreen() {
 
       router.replace({
         pathname: "/(app)/conversions/[id]",
-        params: { id: res.conversion.id },
+        params: { id: response.conversion.id },
       });
     } catch (e: any) {
       const copy = getAppErrorCopy(e, "Conversion failed");
@@ -166,18 +161,12 @@ export default function QuoteConfirmScreen() {
         }}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={{ fontSize: 22, fontWeight: "700" }}>Quote</Text>
-        <Text style={{ marginTop: 6, opacity: 0.72, lineHeight: 20 }}>Review the amount to convert from this gift card, then generate a quote before confirming.</Text>
+        <ScreenHeader
+          title="Quote"
+          subtitle="Review the amount to convert from this gift card, then generate a quote before confirming."
+        />
 
-        <View
-          style={{
-            marginTop: 16,
-            borderWidth: 1,
-            borderColor: "#333",
-            borderRadius: 16,
-            padding: 14,
-          }}
-        >
+        <SectionCard style={{ marginTop: 16 }}>
           <Text style={{ fontWeight: "800" }}>Amount (USD)</Text>
 
           <TextInput
@@ -197,20 +186,16 @@ export default function QuoteConfirmScreen() {
             }}
           />
 
-          <Text style={{ marginTop: 8, opacity: 0.7 }}>Parsed amount: {formatUsdFromCents(amountCents)}</Text>
-        </View>
+          <Text style={{ marginTop: 8, opacity: 0.7 }}>
+            Parsed amount: {formatUsdFromCents(amountCents)}
+          </Text>
+        </SectionCard>
 
-        <View
-          style={{
-            marginTop: 16,
-            borderWidth: 1,
-            borderColor: "#333",
-            borderRadius: 16,
-            padding: 14,
-          }}
-        >
+        <SectionCard style={{ marginTop: 16 }}>
           <Text style={{ fontWeight: "800" }}>Cashout destination (optional)</Text>
-          <Text style={{ marginTop: 6, opacity: 0.72, lineHeight: 20 }}>If you select a bank now, the payout can continue without pausing later.</Text>
+          <Text style={{ marginTop: 6, opacity: 0.72, lineHeight: 20 }}>
+            If you select a bank now, the payout can continue without pausing later.
+          </Text>
 
           {banksLoading ? (
             <View style={{ marginTop: 12, alignItems: "center" }}>
@@ -221,7 +206,8 @@ export default function QuoteConfirmScreen() {
             <>
               <Text style={{ marginTop: 10, opacity: 0.7 }}>No banks linked yet.</Text>
 
-              <Pressable
+              <PrimaryButton
+                label="Link a bank"
                 onPress={() =>
                   router.push({
                     pathname: "/(app)/bank/link",
@@ -232,16 +218,8 @@ export default function QuoteConfirmScreen() {
                     },
                   })
                 }
-                style={{
-                  marginTop: 12,
-                  backgroundColor: "#fff",
-                  borderRadius: 12,
-                  padding: 12,
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ fontWeight: "800" }}>Link a bank</Text>
-              </Pressable>
+                style={{ marginTop: 12 }}
+              />
             </>
           ) : (
             <>
@@ -249,7 +227,7 @@ export default function QuoteConfirmScreen() {
                 scrollEnabled={false}
                 style={{ marginTop: 12 }}
                 data={banks}
-                keyExtractor={(b) => b.id}
+                keyExtractor={(bank) => bank.id}
                 ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
                 renderItem={({ item }) => {
                   const selected = item.id === selectedBankId;
@@ -265,122 +243,100 @@ export default function QuoteConfirmScreen() {
                         backgroundColor: selected ? "#fff" : "transparent",
                       }}
                     >
-                      <Text style={{ fontWeight: "800" }}>{item.displayLabel ?? "Bank Account"}</Text>
+                      <Text style={{ fontWeight: "800" }}>
+                        {item.displayLabel ?? "Bank Account"}
+                      </Text>
 
-                      {item.masked ? <Text style={{ marginTop: 4, opacity: 0.7 }}>•••• {item.masked}</Text> : null}
+                      {item.masked ? (
+                        <Text style={{ marginTop: 4, opacity: 0.7 }}>•••• {item.masked}</Text>
+                      ) : null}
                     </Pressable>
                   );
                 }}
               />
 
-              <Pressable
+              <SecondaryAction
+                label="Continue without bank"
                 onPress={() => setSelectedBankId(null)}
-                style={{
-                  marginTop: 10,
-                  alignItems: "center",
-                  paddingVertical: 8,
-                }}
-              >
-                <Text style={{ opacity: 0.7 }}>Continue without bank</Text>
-              </Pressable>
+              />
             </>
           )}
 
           {selectedBank ? (
-            <View
-              style={{
-                marginTop: 12,
-                borderWidth: 1,
-                borderColor: "#333",
-                borderRadius: 12,
-                padding: 12,
-              }}
-            >
+            <SectionCard style={{ marginTop: 12 }}>
               <Text style={{ fontWeight: "800" }}>Selected destination</Text>
               <Text style={{ marginTop: 6, opacity: 0.75 }}>
                 {selectedBank.displayLabel ?? "Bank Account"}
                 {selectedBank.masked ? ` •••• ${selectedBank.masked}` : ""}
               </Text>
-            </View>
+            </SectionCard>
           ) : null}
-        </View>
+        </SectionCard>
 
-        <Pressable
+        <PrimaryButton
+          label="Get Quote"
           onPress={onGetQuote}
           disabled={loadingQuote || loadingConvert}
-          style={{
-            marginTop: 18,
-            backgroundColor: "#fff",
-            borderRadius: 14,
-            paddingVertical: 14,
-            alignItems: "center",
-            opacity: loadingQuote || loadingConvert ? 0.6 : 1,
-          }}
-        >
-          {loadingQuote ? <ActivityIndicator /> : <Text style={{ fontWeight: "900" }}>Get Quote</Text>}
-        </Pressable>
+          loading={loadingQuote}
+          style={{ marginTop: 18 }}
+        />
 
         {quote ? (
-          <View
-            style={{
-              marginTop: 16,
-              borderWidth: 1,
-              borderColor: "#333",
-              borderRadius: 16,
-              padding: 14,
-            }}
-          >
+          <SectionCard style={{ marginTop: 16 }}>
             <Text style={{ fontSize: 16, fontWeight: "800" }}>Quote Summary</Text>
 
-            <Text style={{ marginTop: 8, opacity: 0.75, lineHeight: 20 }}>{quote.ui?.subtitle ?? "Review your quote details, then confirm to start the conversion."}</Text>
+            <Text style={{ marginTop: 8, opacity: 0.75, lineHeight: 20 }}>
+              {quote.ui?.subtitle ??
+                "Review your quote details, then confirm to start the conversion."}
+            </Text>
 
             <View style={{ marginTop: 12 }}>
               <Text style={{ opacity: 0.85 }}>Quote ID: {quote.quote.id}</Text>
 
               {typeof quote.quote.inputCents === "number" ? (
-                <Text style={{ marginTop: 6, opacity: 0.85 }}>Input: {formatUsdFromCents(quote.quote.inputCents)}</Text>
+                <Text style={{ marginTop: 6, opacity: 0.85 }}>
+                  Input: {formatUsdFromCents(quote.quote.inputCents)}
+                </Text>
               ) : (
-                <Text style={{ marginTop: 6, opacity: 0.85 }}>Input: {formatUsdFromCents(amountCents)}</Text>
+                <Text style={{ marginTop: 6, opacity: 0.85 }}>
+                  Input: {formatUsdFromCents(amountCents)}
+                </Text>
               )}
 
-              {typeof quote.quote.outputXrp === "number" ? <Text style={{ marginTop: 6, opacity: 0.85 }}>Estimated XRP: {quote.quote.outputXrp}</Text> : null}
+              {typeof quote.quote.outputXrp === "number" ? (
+                <Text style={{ marginTop: 6, opacity: 0.85 }}>
+                  Estimated XRP: {quote.quote.outputXrp}
+                </Text>
+              ) : null}
 
-              {quote.ui?.feeLabel ? <Text style={{ marginTop: 6, opacity: 0.85 }}>Fee: {quote.ui.feeLabel}</Text> : null}
+              {quote.ui?.feeLabel ? (
+                <Text style={{ marginTop: 6, opacity: 0.85 }}>Fee: {quote.ui.feeLabel}</Text>
+              ) : null}
 
-              {quote.ui?.rateLabel ? <Text style={{ marginTop: 6, opacity: 0.85 }}>Rate: {quote.ui.rateLabel}</Text> : null}
+              {quote.ui?.rateLabel ? (
+                <Text style={{ marginTop: 6, opacity: 0.85 }}>Rate: {quote.ui.rateLabel}</Text>
+              ) : null}
 
-              {quote.ui?.totalLabel ? <Text style={{ marginTop: 6, opacity: 0.85 }}>Total: {quote.ui.totalLabel}</Text> : null}
+              {quote.ui?.totalLabel ? (
+                <Text style={{ marginTop: 6, opacity: 0.85 }}>Total: {quote.ui.totalLabel}</Text>
+              ) : null}
             </View>
 
-            <Pressable
+            <PrimaryButton
+              label="Confirm & Start"
               onPress={onConfirm}
               disabled={loadingConvert}
-              style={{
-                marginTop: 14,
-                backgroundColor: "#fff",
-                borderRadius: 14,
-                paddingVertical: 14,
-                alignItems: "center",
-                opacity: loadingConvert ? 0.6 : 1,
-              }}
-            >
-              {loadingConvert ? <ActivityIndicator /> : <Text style={{ fontWeight: "900" }}>Confirm & Start</Text>}
-            </Pressable>
-          </View>
+              loading={loadingConvert}
+              style={{ marginTop: 14 }}
+            />
+          </SectionCard>
         ) : null}
 
-        <Pressable
+        <SecondaryAction
+          label="Back"
           onPress={() => router.back()}
           disabled={loadingQuote || loadingConvert}
-          style={{
-            marginTop: 16,
-            alignItems: "center",
-            paddingVertical: 12,
-            opacity: loadingQuote || loadingConvert ? 0.6 : 1,
-          }}
-        >
-          <Text style={{ opacity: 0.7 }}>Back</Text>
-        </Pressable>
+        />
       </ScrollView>
     </SafeAreaView>
   );

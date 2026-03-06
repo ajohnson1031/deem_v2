@@ -44,7 +44,12 @@ export default function AuthScreen() {
         keyboardType="email-address"
         style={{ borderWidth: 1, borderColor: "#333", padding: 12, borderRadius: 10 }}
       />
-      <TextInput value={code} onChangeText={setCode} placeholder="Code (mock: 000000)" style={{ borderWidth: 1, borderColor: "#333", padding: 12, borderRadius: 10 }} />
+      <TextInput
+        value={code}
+        onChangeText={setCode}
+        placeholder="Code (mock: 000000)"
+        style={{ borderWidth: 1, borderColor: "#333", padding: 12, borderRadius: 10 }}
+      />
 
       <Button title={loading ? "Signing in..." : "Sign in"} onPress={onSignIn} disabled={loading} />
     </View>

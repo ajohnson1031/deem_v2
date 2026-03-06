@@ -2,7 +2,13 @@ import { Pressable, Text, View } from "react-native";
 
 import type { ActivityItem } from "@/src/lib/contracts";
 
-import { getActivitySubtitle, getActivityTitle, getPrimaryAmount, getSecondaryAmount, prettifyStatus } from "./formatters";
+import {
+  getActivitySubtitle,
+  getActivityTitle,
+  getPrimaryAmount,
+  getSecondaryAmount,
+  prettifyStatus,
+} from "./formatters";
 
 function formatDateTime(iso?: string | null) {
   if (!iso) return "—";
@@ -75,7 +81,9 @@ export function ActivityCard({ item, onPress }: { item: ActivityItem; onPress: (
     >
       <StatusPill label={statusLabel} tone={tone} />
 
-      <Text style={{ marginTop: 10, fontSize: 16, fontWeight: "800" }}>{getActivityTitle(item)}</Text>
+      <Text style={{ marginTop: 10, fontSize: 16, fontWeight: "800" }}>
+        {getActivityTitle(item)}
+      </Text>
 
       <Text
         style={{
@@ -96,9 +104,13 @@ export function ActivityCard({ item, onPress }: { item: ActivityItem; onPress: (
         }}
       >
         <View style={{ flex: 1, marginRight: 12 }}>
-          {primaryAmount ? <Text style={{ fontWeight: "900", fontSize: 16 }}>{primaryAmount}</Text> : null}
+          {primaryAmount ? (
+            <Text style={{ fontWeight: "900", fontSize: 16 }}>{primaryAmount}</Text>
+          ) : null}
 
-          {secondaryAmount ? <Text style={{ marginTop: 4, opacity: 0.72 }}>{secondaryAmount}</Text> : null}
+          {secondaryAmount ? (
+            <Text style={{ marginTop: 4, opacity: 0.72 }}>{secondaryAmount}</Text>
+          ) : null}
         </View>
 
         <Text style={{ opacity: 0.58, fontSize: 12 }}>{formatDateTime(timestamp)}</Text>

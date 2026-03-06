@@ -67,17 +67,29 @@ export const giftCardRoutes: FastifyPluginAsync = async (app) => {
       const giftCardId = gc.id;
 
       const [user10m, user1d, card10m, card1d] = await Promise.all([
-        prisma.giftCardBalanceCheck.count({ where: { userId, createdAt: { gte: minutesAgo(10) } } }),
+        prisma.giftCardBalanceCheck.count({
+          where: { userId, createdAt: { gte: minutesAgo(10) } },
+        }),
         prisma.giftCardBalanceCheck.count({ where: { userId, createdAt: { gte: daysAgo(1) } } }),
-        prisma.giftCardBalanceCheck.count({ where: { giftCardId, createdAt: { gte: minutesAgo(10) } } }),
-        prisma.giftCardBalanceCheck.count({ where: { giftCardId, createdAt: { gte: daysAgo(1) } } }),
+        prisma.giftCardBalanceCheck.count({
+          where: { giftCardId, createdAt: { gte: minutesAgo(10) } },
+        }),
+        prisma.giftCardBalanceCheck.count({
+          where: { giftCardId, createdAt: { gte: daysAgo(1) } },
+        }),
       ]);
 
       const limits = BALANCE_CHECK_LIMITS;
 
       const logAnd429 = async (scope: string, reason: string) => {
         await prisma.giftCardBalanceCheck.create({
-          data: { id: newId(), user: { connect: { id: userId } }, giftCard: { connect: { id: giftCardId } }, ok: false, reason },
+          data: {
+            id: newId(),
+            user: { connect: { id: userId } },
+            giftCard: { connect: { id: giftCardId } },
+            ok: false,
+            reason,
+          },
         });
         return reply.code(429).send({ error: "BALANCE_CHECK_RATE_LIMIT", scope });
       };
@@ -91,7 +103,12 @@ export const giftCardRoutes: FastifyPluginAsync = async (app) => {
       const result = { giftCardId: gc.id, balanceUsd: 2500, currency: "USD" as const };
 
       await prisma.giftCardBalanceCheck.create({
-        data: { id: newId(), user: { connect: { id: userId } }, giftCard: { connect: { id: giftCardId } }, ok: true },
+        data: {
+          id: newId(),
+          user: { connect: { id: userId } },
+          giftCard: { connect: { id: giftCardId } },
+          ok: true,
+        },
       });
 
       return reply.send(result);

@@ -118,7 +118,8 @@ function createProcessor(providers: ProviderRegistry) {
           // exactOptionalPropertyTypes-safe update
           const data: any = {};
           if (res.xrpAmount != null) data.xrpAmount = res.xrpAmount;
-          if (Object.keys(data).length) await prisma.conversion.update({ where: { id: conversionId }, data });
+          if (Object.keys(data).length)
+            await prisma.conversion.update({ where: { id: conversionId }, data });
 
           // Ledger credit (custodial)
           const wallet = await getOrCreateWallet(prisma, c.userId);
@@ -188,7 +189,9 @@ function createProcessor(providers: ProviderRegistry) {
         // Pause until bank account attached
         if (!c.bankAccountId) {
           if (!(await hasEvent(conversionId, "WAITING_FOR_BANK"))) {
-            await addEvent(conversionId, "WAITING_FOR_BANK", { msg: "Attach a bank account to cash out." });
+            await addEvent(conversionId, "WAITING_FOR_BANK", {
+              msg: "Attach a bank account to cash out.",
+            });
           }
           return;
         }
@@ -221,7 +224,10 @@ function createProcessor(providers: ProviderRegistry) {
   };
 }
 
-export function startConversionWorker(providers: ProviderRegistry, connection: ConnectionOptions = getBullMqConnection()) {
+export function startConversionWorker(
+  providers: ProviderRegistry,
+  connection: ConnectionOptions = getBullMqConnection(),
+) {
   const processConversion = createProcessor(providers);
 
   const worker = new Worker<ConversionJobData>(

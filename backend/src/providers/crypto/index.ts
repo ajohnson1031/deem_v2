@@ -4,7 +4,9 @@ import type { SandboxContext } from "../../lib/sandbox.js";
 import { dropsToXrpString, xrpToDrops } from "../../lib/xrp.js";
 
 // backend/src/providers/crypto/index.ts (types)
-export type BuyXrpResult = { ok: true; xrpAmount?: string | number; providerRef?: string } | { ok: false; reason: string };
+export type BuyXrpResult =
+  | { ok: true; xrpAmount?: string | number; providerRef?: string }
+  | { ok: false; reason: string };
 
 export type SellXrpResult = { ok: true; providerRef?: string } | { ok: false; reason: string };
 

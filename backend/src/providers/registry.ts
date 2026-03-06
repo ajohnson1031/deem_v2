@@ -24,13 +24,19 @@ export type ProviderRegistry = {
 export function buildProviderRegistry(env: AppEnv): ProviderRegistry {
   const sb = createSandboxContext(buildSandboxConfig(env));
 
-  const giftCard: GiftCardProvider = env.GIFTCARD_PROVIDER === "sandbox" ? new SandboxGiftCardProvider(sb) : new MockGiftCardProvider();
+  const giftCard: GiftCardProvider =
+    env.GIFTCARD_PROVIDER === "sandbox"
+      ? new SandboxGiftCardProvider(sb)
+      : new MockGiftCardProvider();
 
-  const crypto: CryptoProvider = env.CRYPTO_PROVIDER === "sandbox" ? new SandboxCryptoProvider(sb) : new MockCryptoProvider();
+  const crypto: CryptoProvider =
+    env.CRYPTO_PROVIDER === "sandbox" ? new SandboxCryptoProvider(sb) : new MockCryptoProvider();
 
-  const payout: PayoutProvider = env.PAYOUT_PROVIDER === "sandbox" ? new SandboxPayoutProvider(sb) : new MockPayoutProvider();
+  const payout: PayoutProvider =
+    env.PAYOUT_PROVIDER === "sandbox" ? new SandboxPayoutProvider(sb) : new MockPayoutProvider();
 
-  const kyc: KycProvider = env.KYC_PROVIDER === "sandbox" ? new SandboxKycProvider(sb) : new MockKycProvider();
+  const kyc: KycProvider =
+    env.KYC_PROVIDER === "sandbox" ? new SandboxKycProvider(sb) : new MockKycProvider();
 
   return { giftCard, crypto, payout, kyc };
 }

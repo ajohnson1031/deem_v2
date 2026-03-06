@@ -1,13 +1,27 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo } from "react";
-import { ActivityIndicator, FlatList, Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 
 import { useConversionTimeline } from "@/src/hooks/useConversionTimeline";
 import { useAuth } from "@/src/state/auth";
 
-import { MostRecentUpdateCard, ProgressBar, StepRow, TimelineCard } from "@/src/features/conversions/components";
-import { estimateRemainingMs, formatDurationMs, formatUsd, prettifyStatus } from "@/src/features/conversions/formatters";
+import {
+  MostRecentUpdateCard,
+  ProgressBar,
+  StepRow,
+  TimelineCard,
+} from "@/src/features/conversions/components";
+import { estimateRemainingMs, formatDurationMs } from "@/src/features/conversions/formatters";
 import { buildProgressSteps } from "@/src/features/conversions/progress";
+import { formatUsd, prettifyStatus } from "@/src/lib/format";
 
 export default function ConversionStatusScreen() {
   const router = useRouter();
@@ -23,11 +37,12 @@ export default function ConversionStatusScreen() {
   });
 
   const conversion = data?.conversion;
-  const timeline = data?.timeline ?? [];
+  const timeline = useMemo(() => data?.timeline ?? [], [data?.timeline]);
 
   const steps = useMemo(() => buildProgressSteps(conversion, timeline), [conversion, timeline]);
 
-  const percent = typeof conversion?.processingPercent === "number" ? conversion.processingPercent : 0;
+  const percent =
+    typeof conversion?.processingPercent === "number" ? conversion.processingPercent : 0;
 
   const isFailed = Boolean(conversion?.failureReason) || conversion?.status === "FAILED";
 
@@ -37,7 +52,12 @@ export default function ConversionStatusScreen() {
   }, [timeline]);
 
   const remainingMs = useMemo(
-    () => estimateRemainingMs(conversion?.processingPercent, conversion?.createdAt, conversion?.isTerminal),
+    () =>
+      estimateRemainingMs(
+        conversion?.processingPercent,
+        conversion?.createdAt,
+        conversion?.isTerminal,
+      ),
     [conversion?.processingPercent, conversion?.createdAt, conversion?.isTerminal],
   );
 
@@ -69,7 +89,9 @@ export default function ConversionStatusScreen() {
             </View>
           ) : (
             <>
-              <Text style={{ fontSize: 20, fontWeight: "800" }}>{conversion?.displayStatus ?? "Processing"}</Text>
+              <Text style={{ fontSize: 20, fontWeight: "800" }}>
+                {conversion?.displayStatus ?? "Processing"}
+              </Text>
 
               {!!conversion?.displaySubtitle ? (
                 <Text
@@ -96,17 +118,33 @@ export default function ConversionStatusScreen() {
               >
                 <Text style={{ fontWeight: "800" }}>Estimated time</Text>
                 <Text style={{ marginTop: 6, opacity: 0.78 }}>
-                  {conversion?.isTerminal ? "Complete" : conversion?.requiresBank ? "Waiting on bank link" : formatDurationMs(remainingMs)}
+                  {conversion?.isTerminal
+                    ? "Complete"
+                    : conversion?.requiresBank
+                      ? "Waiting on bank link"
+                      : formatDurationMs(remainingMs)}
                 </Text>
-                <Text style={{ marginTop: 6, opacity: 0.6, fontSize: 12 }}>This is a simple estimate based on elapsed time and current progress.</Text>
+                <Text style={{ marginTop: 6, opacity: 0.6, fontSize: 12 }}>
+                  This is a simple estimate based on elapsed time and current progress.
+                </Text>
               </View>
 
               <View style={{ marginTop: 14 }}>
-                <Text style={{ opacity: 0.82 }}>Source: {formatUsd(conversion?.sourceAmount?.cents)}</Text>
-                <Text style={{ opacity: 0.82, marginTop: 4 }}>Fees: {formatUsd(conversion?.fees?.cents)}</Text>
-                <Text style={{ opacity: 0.82, marginTop: 4 }}>Net: {formatUsd(conversion?.netAmount?.cents)}</Text>
-                <Text style={{ opacity: 0.82, marginTop: 4 }}>XRP: {typeof conversion?.xrpAmount === "number" ? conversion.xrpAmount : "—"}</Text>
-                <Text style={{ opacity: 0.62, marginTop: 8, fontSize: 12 }}>Internal status: {prettifyStatus(conversion?.status)}</Text>
+                <Text style={{ opacity: 0.82 }}>
+                  Source: {formatUsd(conversion?.sourceAmount?.cents)}
+                </Text>
+                <Text style={{ opacity: 0.82, marginTop: 4 }}>
+                  Fees: {formatUsd(conversion?.fees?.cents)}
+                </Text>
+                <Text style={{ opacity: 0.82, marginTop: 4 }}>
+                  Net: {formatUsd(conversion?.netAmount?.cents)}
+                </Text>
+                <Text style={{ opacity: 0.82, marginTop: 4 }}>
+                  XRP: {typeof conversion?.xrpAmount === "number" ? conversion.xrpAmount : "—"}
+                </Text>
+                <Text style={{ opacity: 0.62, marginTop: 8, fontSize: 12 }}>
+                  Internal status: {prettifyStatus(conversion?.status)}
+                </Text>
               </View>
 
               {!!conversion?.failureReason ? (

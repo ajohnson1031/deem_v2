@@ -12,7 +12,9 @@
     "start:worker": "node dist/worker.js",
     "prisma:migrate": "prisma migrate dev",
     "prisma:generate": "prisma generate",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "lint": "eslint src prisma.config.ts --ext .ts",
+    "lint:fix": "eslint src prisma.config.ts --ext .ts --fix"
   },
   "keywords": [],
   "author": "",

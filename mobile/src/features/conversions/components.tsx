@@ -8,7 +8,8 @@ import type { EventCard, ProgressStep } from "./progress";
 import { eventToCard } from "./progress";
 
 export function SeverityPill({ severity }: { severity?: EventCard["severity"] }) {
-  const label = severity === "good" ? "OK" : severity === "warn" ? "ATTN" : severity === "bad" ? "ERR" : "INFO";
+  const label =
+    severity === "good" ? "OK" : severity === "warn" ? "ATTN" : severity === "bad" ? "ERR" : "INFO";
 
   return (
     <View
@@ -107,7 +108,11 @@ export function StepRow({ step }: { step: ProgressStep }) {
           backgroundColor: isDone ? "#fff" : "transparent",
         }}
       >
-        {isDone ? <Text style={{ fontSize: 12, fontWeight: "800" }}>✓</Text> : isCurrent ? <PulseDot /> : null}
+        {isDone ? (
+          <Text style={{ fontSize: 12, fontWeight: "800" }}>✓</Text>
+        ) : isCurrent ? (
+          <PulseDot />
+        ) : null}
       </View>
 
       <View style={{ marginLeft: 12, flex: 1 }}>
@@ -182,7 +187,9 @@ export function TimelineCard({ event }: { event: ConversionTimelineItem }) {
 
       <View style={{ marginTop: 10 }}>
         <Pressable onPress={() => setShowDetails((v) => !v)} style={{ alignSelf: "flex-start" }}>
-          <Text style={{ opacity: 0.7, fontWeight: "700" }}>{showDetails ? "Hide details" : "Show details"}</Text>
+          <Text style={{ opacity: 0.7, fontWeight: "700" }}>
+            {showDetails ? "Hide details" : "Show details"}
+          </Text>
         </Pressable>
 
         {showDetails ? (
@@ -194,7 +201,9 @@ export function TimelineCard({ event }: { event: ConversionTimelineItem }) {
               paddingTop: 10,
             }}
           >
-            {card.detail ? <Text style={{ opacity: 0.75, marginBottom: 10 }}>{card.detail}</Text> : null}
+            {card.detail ? (
+              <Text style={{ opacity: 0.75, marginBottom: 10 }}>{card.detail}</Text>
+            ) : null}
 
             <Text style={{ fontSize: 12, opacity: 0.7 }}>Raw event</Text>
             <Text style={{ marginTop: 6, opacity: 0.85 }}>{safeJson(event)}</Text>
@@ -228,7 +237,9 @@ export function MostRecentUpdateCard({ event }: { event: ConversionTimelineItem 
 
         <Text style={{ marginTop: 6, opacity: 0.78, lineHeight: 20 }}>{card.subtitle}</Text>
 
-        <Text style={{ marginTop: 10, opacity: 0.62, fontSize: 12 }}>{formatDateTime(event?.at)}</Text>
+        <Text style={{ marginTop: 10, opacity: 0.62, fontSize: 12 }}>
+          {formatDateTime(event?.at)}
+        </Text>
       </View>
     </View>
   );

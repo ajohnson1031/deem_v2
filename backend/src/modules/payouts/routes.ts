@@ -17,7 +17,13 @@ function normalizeEvent(e: any) {
   const base = { id: e.id, type: e.type, at: e.createdAt };
 
   if (e.type === "STATUS_CHANGED") return { ...base, kind: "status", to: e.payload?.to ?? null };
-  if (String(e.type).startsWith("STEP_DONE_")) return { ...base, kind: "step", step: String(e.type).replace("STEP_DONE_", ""), details: e.payload ?? {} };
+  if (String(e.type).startsWith("STEP_DONE_"))
+    return {
+      ...base,
+      kind: "step",
+      step: String(e.type).replace("STEP_DONE_", ""),
+      details: e.payload ?? {},
+    };
   if (e.type === "PROVIDER_CALL")
     return {
       ...base,
@@ -30,7 +36,8 @@ function normalizeEvent(e: any) {
     };
   if (e.type === "LEDGER") return { ...base, kind: "ledger", ...(e.payload ?? {}) };
   if (e.type === "FAILED") return { ...base, kind: "error", reason: e.payload?.reason ?? null };
-  if (e.type === "JOB_FAILED") return { ...base, kind: "job_error", error: e.payload?.error ?? null };
+  if (e.type === "JOB_FAILED")
+    return { ...base, kind: "job_error", error: e.payload?.error ?? null };
   if (e.type === "BANK_ATTACHED") return { ...base, kind: "bank", ...(e.payload ?? {}) };
   if (e.type === "WAITING_FOR_BANK") return { ...base, kind: "action", ...(e.payload ?? {}) };
 

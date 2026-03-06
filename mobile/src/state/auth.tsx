@@ -6,7 +6,11 @@ type AuthState = {
   token: string | null;
   userId: string | null;
   kycStatus: "NOT_STARTED" | "PENDING" | "VERIFIED" | "REJECTED" | null;
-  setSession: (args: { token: string; userId: string; kycStatus: AuthState["kycStatus"] }) => Promise<void>;
+  setSession: (args: {
+    token: string;
+    userId: string;
+    kycStatus: AuthState["kycStatus"];
+  }) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -55,7 +59,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await SecureStore.deleteItemAsync(KYC_KEY);
   };
 
-  const value = useMemo<AuthState>(() => ({ initialized, token, userId, kycStatus, setSession, signOut }), [initialized, token, userId, kycStatus]);
+  const value = useMemo<AuthState>(
+    () => ({ initialized, token, userId, kycStatus, setSession, signOut }),
+    [initialized, token, userId, kycStatus],
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

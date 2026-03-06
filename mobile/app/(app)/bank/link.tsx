@@ -1,8 +1,9 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, SafeAreaView, Text, View } from "react-native";
+import { ActivityIndicator, Alert, SafeAreaView, Text, View } from "react-native";
 
 import { completeBankLink, createPayout, startBankLink } from "@/src/api";
+import { PrimaryButton, ScreenHeader, SecondaryAction, SectionCard } from "@/src/components/ui";
 import { getAppErrorCopy } from "@/src/lib/errors";
 import { useAuth } from "@/src/state/auth";
 
@@ -105,19 +106,12 @@ export default function LinkBankScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, padding: 16 }}>
-      <Text style={{ fontSize: 22, fontWeight: "800" }}>Link Bank</Text>
+      <ScreenHeader
+        title="Link Bank"
+        subtitle="This mock screen simulates a Plaid connection and creates a linked bank account for the current user."
+      />
 
-      <Text style={{ marginTop: 6, opacity: 0.75, lineHeight: 20 }}>This mock screen simulates a Plaid connection and creates a linked bank account for the current user.</Text>
-
-      <View
-        style={{
-          marginTop: 16,
-          borderWidth: 1,
-          borderColor: "#333",
-          borderRadius: 16,
-          padding: 14,
-        }}
-      >
+      <SectionCard style={{ marginTop: 16 }}>
         {loadingStart ? (
           <View style={{ alignItems: "center", paddingVertical: 8 }}>
             <ActivityIndicator />
@@ -129,60 +123,38 @@ export default function LinkBankScreen() {
 
             <Text style={{ marginTop: 8, opacity: 0.8 }}>{linkToken ?? "(none)"}</Text>
 
-            <Pressable
+            <PrimaryButton
+              label="Complete link"
               onPress={onComplete}
               disabled={loadingComplete}
-              style={{
-                marginTop: 14,
-                backgroundColor: "#fff",
-                borderRadius: 14,
-                paddingVertical: 14,
-                alignItems: "center",
-                opacity: loadingComplete ? 0.6 : 1,
-              }}
-            >
-              {loadingComplete ? <ActivityIndicator /> : <Text style={{ fontWeight: "900" }}>Complete link</Text>}
-            </Pressable>
+              loading={loadingComplete}
+              style={{ marginTop: 14 }}
+            />
           </>
         )}
-      </View>
+      </SectionCard>
 
-      <View
-        style={{
-          marginTop: 16,
-          borderWidth: 1,
-          borderColor: "#333",
-          borderRadius: 16,
-          padding: 14,
-        }}
-      >
+      <SectionCard style={{ marginTop: 16 }}>
         <Text style={{ fontWeight: "800" }}>What happens next</Text>
 
         {params.conversionId ? (
           <Text style={{ marginTop: 8, opacity: 0.75, lineHeight: 20 }}>
-            After linking, we’ll attach this bank to your current conversion and continue the payout flow automatically.
+            After linking, we’ll attach this bank to your current conversion and continue the payout
+            flow automatically.
           </Text>
         ) : params.returnToQuote === "1" ? (
           <Text style={{ marginTop: 8, opacity: 0.75, lineHeight: 20 }}>
-            After linking, we’ll return you to the quote screen and refresh your available bank accounts automatically.
+            After linking, we’ll return you to the quote screen and refresh your available bank
+            accounts automatically.
           </Text>
         ) : (
-          <Text style={{ marginTop: 8, opacity: 0.75, lineHeight: 20 }}>After linking, this bank account will be available as a cashout destination in Deem.</Text>
+          <Text style={{ marginTop: 8, opacity: 0.75, lineHeight: 20 }}>
+            After linking, this bank account will be available as a cashout destination in Deem.
+          </Text>
         )}
-      </View>
+      </SectionCard>
 
-      <Pressable
-        onPress={() => router.back()}
-        disabled={loadingComplete}
-        style={{
-          marginTop: 16,
-          alignItems: "center",
-          paddingVertical: 12,
-          opacity: loadingComplete ? 0.6 : 1,
-        }}
-      >
-        <Text style={{ opacity: 0.7 }}>Cancel</Text>
-      </Pressable>
+      <SecondaryAction label="Cancel" onPress={() => router.back()} disabled={loadingComplete} />
     </SafeAreaView>
   );
 }

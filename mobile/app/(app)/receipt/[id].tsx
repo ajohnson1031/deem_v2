@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ActivityIndicator, Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, SafeAreaView, ScrollView, Text, View } from "react-native";
 
+import { PrimaryButton, ScreenHeader, SectionCard } from "@/src/components/ui";
 import { useConversionTimeline } from "@/src/hooks/useConversionTimeline";
 import type { ConversionTimelineItem } from "@/src/lib/contracts";
 import { useAuth } from "@/src/state/auth";
@@ -23,7 +24,6 @@ function findBankLabelFromTimeline(timeline: ConversionTimelineItem[]) {
   const bankEvent = [...timeline].reverse().find((event) => event?.kind === "bank");
 
   if (!bankEvent) return null;
-
   if (bankEvent.displayLabel) return bankEvent.displayLabel;
   if (bankEvent.bankLabel) return bankEvent.bankLabel;
   if (bankEvent.masked) return `•••• ${bankEvent.masked}`;
@@ -48,7 +48,10 @@ export default function ReceiptScreen() {
   const timeline = data?.timeline ?? [];
   const bankLabel = findBankLabelFromTimeline(timeline);
 
-  const isSuccessfulTerminal = Boolean(conversion?.isTerminal) && !conversion?.failureReason && conversion?.status !== "FAILED";
+  const isSuccessfulTerminal =
+    Boolean(conversion?.isTerminal) &&
+    !conversion?.failureReason &&
+    conversion?.status !== "FAILED";
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -58,17 +61,16 @@ export default function ReceiptScreen() {
           paddingBottom: 28,
         }}
       >
-        <Text style={{ fontSize: 22, fontWeight: "900" }}>Receipt</Text>
+        <ScreenHeader
+          title="Receipt"
+          subtitle={
+            isSuccessfulTerminal
+              ? "Your conversion has finished processing."
+              : "Here is the latest available summary for this conversion."
+          }
+        />
 
-        <View
-          style={{
-            marginTop: 16,
-            borderWidth: 1,
-            borderColor: "#333",
-            borderRadius: 18,
-            padding: 16,
-          }}
-        >
+        <SectionCard style={{ marginTop: 16 }}>
           {loading && !conversion ? (
             <View style={{ paddingVertical: 12, alignItems: "center" }}>
               <ActivityIndicator />
@@ -76,99 +78,79 @@ export default function ReceiptScreen() {
             </View>
           ) : (
             <>
-              <Text style={{ fontSize: 20, fontWeight: "900" }}>{isSuccessfulTerminal ? "Conversion complete" : "Conversion summary"}</Text>
-
-              <Text style={{ marginTop: 6, opacity: 0.75, lineHeight: 20 }}>
-                {isSuccessfulTerminal ? "Your conversion has finished processing." : "Here is the latest available summary for this conversion."}
+              <Text style={{ fontSize: 20, fontWeight: "900" }}>
+                {isSuccessfulTerminal ? "Conversion complete" : "Conversion summary"}
               </Text>
 
-              <View
-                style={{
-                  marginTop: 16,
-                  borderWidth: 1,
-                  borderColor: "#333",
-                  borderRadius: 14,
-                  padding: 14,
-                }}
-              >
+              <SectionCard style={{ marginTop: 16 }}>
                 <Text style={{ fontWeight: "800" }}>Amounts</Text>
 
-                <Text style={{ marginTop: 10, opacity: 0.85 }}>Source: {formatUsd(conversion?.sourceAmount?.cents)}</Text>
-                <Text style={{ marginTop: 6, opacity: 0.85 }}>Fees: {formatUsd(conversion?.fees?.cents)}</Text>
-                <Text style={{ marginTop: 6, opacity: 0.85 }}>Net: {formatUsd(conversion?.netAmount?.cents)}</Text>
-                <Text style={{ marginTop: 6, opacity: 0.85 }}>XRP: {typeof conversion?.xrpAmount === "number" ? conversion.xrpAmount : "—"}</Text>
-              </View>
+                <Text style={{ marginTop: 10, opacity: 0.85 }}>
+                  Source: {formatUsd(conversion?.sourceAmount?.cents)}
+                </Text>
+                <Text style={{ marginTop: 6, opacity: 0.85 }}>
+                  Fees: {formatUsd(conversion?.fees?.cents)}
+                </Text>
+                <Text style={{ marginTop: 6, opacity: 0.85 }}>
+                  Net: {formatUsd(conversion?.netAmount?.cents)}
+                </Text>
+                <Text style={{ marginTop: 6, opacity: 0.85 }}>
+                  XRP: {typeof conversion?.xrpAmount === "number" ? conversion.xrpAmount : "—"}
+                </Text>
+              </SectionCard>
 
-              <View
-                style={{
-                  marginTop: 14,
-                  borderWidth: 1,
-                  borderColor: "#333",
-                  borderRadius: 14,
-                  padding: 14,
-                }}
-              >
+              <SectionCard style={{ marginTop: 14 }}>
                 <Text style={{ fontWeight: "800" }}>Details</Text>
 
-                <Text style={{ marginTop: 10, opacity: 0.85 }}>Conversion ID: {conversion?.id ?? "—"}</Text>
-                <Text style={{ marginTop: 6, opacity: 0.85 }}>Status: {prettifyStatus(conversion?.status)}</Text>
-                <Text style={{ marginTop: 6, opacity: 0.85 }}>Bank destination: {bankLabel ?? "Not attached"}</Text>
-                <Text style={{ marginTop: 6, opacity: 0.85 }}>Created: {conversion?.createdAt ? new Date(conversion.createdAt).toLocaleString() : "—"}</Text>
-                <Text style={{ marginTop: 6, opacity: 0.85 }}>Updated: {conversion?.updatedAt ? new Date(conversion.updatedAt).toLocaleString() : "—"}</Text>
-              </View>
+                <Text style={{ marginTop: 10, opacity: 0.85 }}>
+                  Conversion ID: {conversion?.id ?? "—"}
+                </Text>
+                <Text style={{ marginTop: 6, opacity: 0.85 }}>
+                  Status: {prettifyStatus(conversion?.status)}
+                </Text>
+                <Text style={{ marginTop: 6, opacity: 0.85 }}>
+                  Bank destination: {bankLabel ?? "Not attached"}
+                </Text>
+                <Text style={{ marginTop: 6, opacity: 0.85 }}>
+                  Created:{" "}
+                  {conversion?.createdAt ? new Date(conversion.createdAt).toLocaleString() : "—"}
+                </Text>
+                <Text style={{ marginTop: 6, opacity: 0.85 }}>
+                  Updated:{" "}
+                  {conversion?.updatedAt ? new Date(conversion.updatedAt).toLocaleString() : "—"}
+                </Text>
+              </SectionCard>
 
               {!!conversion?.failureReason ? (
-                <View
-                  style={{
-                    marginTop: 14,
-                    borderWidth: 1,
-                    borderColor: "#333",
-                    borderRadius: 14,
-                    padding: 14,
-                  }}
-                >
+                <SectionCard style={{ marginTop: 14 }}>
                   <Text style={{ fontWeight: "800" }}>What happened</Text>
                   <Text style={{ marginTop: 8, opacity: 0.8 }}>{conversion.failureReason}</Text>
-                </View>
+                </SectionCard>
               ) : null}
 
               {!!error ? <Text style={{ marginTop: 14, opacity: 0.75 }}>{error}</Text> : null}
 
               <View style={{ flexDirection: "row", gap: 10, marginTop: 16 }}>
-                <Pressable
+                <PrimaryButton
+                  label="Home"
                   onPress={() => router.replace("/(app)")}
-                  style={{
-                    flex: 1,
-                    backgroundColor: "#fff",
-                    borderRadius: 14,
-                    paddingVertical: 14,
-                    alignItems: "center",
-                  }}
-                >
-                  <Text style={{ fontWeight: "900" }}>Home</Text>
-                </Pressable>
+                  style={{ flex: 1 }}
+                />
 
-                <Pressable
+                <PrimaryButton
+                  label="Back to status"
                   onPress={() =>
                     router.replace({
                       pathname: "/(app)/conversions/[id]",
                       params: { id: conversionId },
                     })
                   }
-                  style={{
-                    flex: 1,
-                    backgroundColor: "#fff",
-                    borderRadius: 14,
-                    paddingVertical: 14,
-                    alignItems: "center",
-                  }}
-                >
-                  <Text style={{ fontWeight: "900" }}>Back to status</Text>
-                </Pressable>
+                  style={{ flex: 1 }}
+                />
               </View>
             </>
           )}
-        </View>
+        </SectionCard>
       </ScrollView>
     </SafeAreaView>
   );

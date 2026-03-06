@@ -10,7 +10,12 @@ type Options = {
   enabled?: boolean;
 };
 
-export function useConversionTimeline({ token, conversionId, intervalMs = 1500, enabled = true }: Options) {
+export function useConversionTimeline({
+  token,
+  conversionId,
+  intervalMs = 1500,
+  enabled = true,
+}: Options) {
   const [data, setData] = useState<ConversionTimelineResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);

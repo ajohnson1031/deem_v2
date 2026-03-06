@@ -6,13 +6,17 @@
     "mobile"
   ],
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.1",
+    "prettier": "^3.8.1",
+    "typescript-eslint": "^8.56.1"
   },
   "scripts": {
     "dev": "concurrently -k -n BACKEND,MOBILE \"npm -w backend run dev\" \"npm -w mobile run dev\"",
     "dev:backend": "npm -w backend run dev",
     "dev:mobile": "npm -w mobile run dev",
     "dev:ios": "npm -w mobile run ios",
-    "dev:android": "npm -w mobile run android"
+    "dev:android": "npm -w mobile run android",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check"
   }
 }

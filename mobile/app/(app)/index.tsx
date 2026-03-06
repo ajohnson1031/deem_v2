@@ -1,8 +1,16 @@
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, SafeAreaView, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  SafeAreaView,
+  Text,
+  View,
+} from "react-native";
 
 import { getActivity, getWalletBalance } from "@/src/api";
+import { PrimaryButton, ScreenHeader, SectionCard } from "@/src/components/ui";
 import { ActivityCard, formatXrp } from "@/src/features/activity";
 import type { ActivityItem } from "@/src/lib/contracts";
 import { useAuth } from "@/src/state/auth";
@@ -20,7 +28,10 @@ export default function HomeScreen() {
   const loadHome = useCallback(async () => {
     if (!token) return;
 
-    const [balanceRes, activityRes] = await Promise.all([getWalletBalance({ token }), getActivity({ token })]);
+    const [balanceRes, activityRes] = await Promise.all([
+      getWalletBalance({ token }),
+      getActivity({ token }),
+    ]);
 
     setBalance(balanceRes.wallet ?? null);
     setActivity(activityRes.items ?? []);
@@ -69,18 +80,9 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, padding: 16 }}>
-      <Text style={{ fontSize: 24, fontWeight: "900" }}>Deem</Text>
-      <Text style={{ marginTop: 6, opacity: 0.75 }}>Convert gift card balances into XRP and cash out.</Text>
+      <ScreenHeader title="Deem" subtitle="Convert gift card balances into XRP and cash out." />
 
-      <View
-        style={{
-          marginTop: 16,
-          borderWidth: 1,
-          borderColor: "#333",
-          borderRadius: 18,
-          padding: 16,
-        }}
-      >
+      <SectionCard style={{ marginTop: 16 }}>
         <Text style={{ fontWeight: "800", fontSize: 16 }}>Wallet balance</Text>
 
         {loading ? (
@@ -91,52 +93,30 @@ export default function HomeScreen() {
           <>
             <Text style={{ marginTop: 10, fontSize: 28, fontWeight: "900" }}>{walletXrp}</Text>
 
-            {typeof balance?.xrpDrops === "number" ? <Text style={{ marginTop: 6, opacity: 0.68 }}>{balance.xrpDrops.toLocaleString()} drops</Text> : null}
+            {typeof balance?.xrpDrops === "number" ? (
+              <Text style={{ marginTop: 6, opacity: 0.68 }}>
+                {balance.xrpDrops.toLocaleString()} drops
+              </Text>
+            ) : null}
           </>
         )}
 
         <View style={{ flexDirection: "row", gap: 10, marginTop: 16 }}>
-          <Pressable
+          <PrimaryButton
+            label="Add Card"
             onPress={() => router.push("/(app)/add-card")}
-            style={{
-              flex: 1,
-              backgroundColor: "#fff",
-              borderRadius: 14,
-              paddingVertical: 14,
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ fontWeight: "900" }}>Add Card</Text>
-          </Pressable>
+            style={{ flex: 1 }}
+          />
 
-          <Pressable
-            onPress={onRefresh}
-            style={{
-              flex: 1,
-              backgroundColor: "#fff",
-              borderRadius: 14,
-              paddingVertical: 14,
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ fontWeight: "900" }}>Refresh</Text>
-          </Pressable>
+          <PrimaryButton label="Refresh" onPress={onRefresh} style={{ flex: 1 }} />
         </View>
-      </View>
+      </SectionCard>
 
       {loadError ? (
-        <View
-          style={{
-            marginTop: 16,
-            borderWidth: 1,
-            borderColor: "#333",
-            borderRadius: 16,
-            padding: 14,
-          }}
-        >
+        <SectionCard style={{ marginTop: 16 }}>
           <Text style={{ fontWeight: "800" }}>Unable to load some data</Text>
           <Text style={{ marginTop: 6, opacity: 0.75 }}>{loadError}</Text>
-        </View>
+        </SectionCard>
       ) : null}
 
       <View
@@ -166,7 +146,9 @@ export default function HomeScreen() {
       ) : (
         <FlatList
           data={activity}
-          keyExtractor={(item, index) => String(item.conversionId ?? item.id ?? `${item.status ?? "activity"}-${index}`)}
+          keyExtractor={(item, index) =>
+            String(item.conversionId ?? item.id ?? `${item.status ?? "activity"}-${index}`)
+          }
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
           renderItem={({ item }) => {
@@ -190,16 +172,7 @@ export default function HomeScreen() {
             );
           }}
           ListEmptyComponent={
-            <View
-              style={{
-                marginTop: 20,
-                borderWidth: 1,
-                borderColor: "#333",
-                borderRadius: 16,
-                padding: 16,
-                alignItems: "center",
-              }}
-            >
+            <SectionCard style={{ marginTop: 20, alignItems: "center" }}>
               <Text style={{ fontWeight: "800" }}>No activity yet</Text>
               <Text
                 style={{
@@ -212,19 +185,12 @@ export default function HomeScreen() {
                 Add a gift card to start your first conversion.
               </Text>
 
-              <Pressable
+              <PrimaryButton
+                label="Add Card"
                 onPress={() => router.push("/(app)/add-card")}
-                style={{
-                  marginTop: 14,
-                  backgroundColor: "#fff",
-                  borderRadius: 14,
-                  paddingVertical: 12,
-                  paddingHorizontal: 18,
-                }}
-              >
-                <Text style={{ fontWeight: "900" }}>Add Card</Text>
-              </Pressable>
-            </View>
+                style={{ marginTop: 14, minWidth: 160 }}
+              />
+            </SectionCard>
           }
           contentContainerStyle={{ paddingBottom: 24 }}
         />

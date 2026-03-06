@@ -16,4 +16,6 @@ export const RELIABILITY = {
   maxWatchdogRequeues: 5,
 } as const;
 
-export const WATCHED_STATUSES = Object.keys(RELIABILITY.stuckMinutes) as Array<keyof typeof RELIABILITY.stuckMinutes>;
+export const WATCHED_STATUSES = Object.keys(RELIABILITY.stuckMinutes) as Array<
+  keyof typeof RELIABILITY.stuckMinutes
+>;

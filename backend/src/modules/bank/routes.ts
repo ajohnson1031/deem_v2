@@ -51,7 +51,14 @@ export const bankRoutes: FastifyPluginAsync = async (app) => {
         last4: body.last4 ?? null,
         user: { connect: { id: req.user.id } },
       },
-      select: { id: true, provider: true, providerRef: true, last4: true, status: true, createdAt: true },
+      select: {
+        id: true,
+        provider: true,
+        providerRef: true,
+        last4: true,
+        status: true,
+        createdAt: true,
+      },
     });
 
     const { displayLabel, masked } = bankDisplay(bank.provider, bank.last4);

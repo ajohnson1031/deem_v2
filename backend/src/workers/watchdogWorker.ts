@@ -58,12 +58,20 @@ async function watchdogSweep() {
     const requeues = await countWatchdogRequeues(c.id);
 
     if (requeues >= RELIABILITY.maxWatchdogRequeues) {
-      await addEvent(c.id, "WATCHDOG_GIVE_UP", { status: c.status, updatedAt: c.updatedAt, requeues });
+      await addEvent(c.id, "WATCHDOG_GIVE_UP", {
+        status: c.status,
+        updatedAt: c.updatedAt,
+        requeues,
+      });
       await failConversion(c.id, "WATCHDOG_MAX_REQUEUES_EXCEEDED");
       continue;
     }
 
-    await addEvent(c.id, "WATCHDOG_REQUEUE", { status: c.status, updatedAt: c.updatedAt, requeues: requeues + 1 });
+    await addEvent(c.id, "WATCHDOG_REQUEUE", {
+      status: c.status,
+      updatedAt: c.updatedAt,
+      requeues: requeues + 1,
+    });
 
     // Requeue processing. Unique jobId so multiple requeues can coexist safely.
     await conversionQueue.add(

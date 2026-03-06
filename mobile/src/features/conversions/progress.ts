@@ -1,6 +1,7 @@
 import type { ConversionDto, ConversionTimelineItem } from "@/src/lib/contracts";
 
-import { formatDateTime, formatUsd, prettifyStatus, shortProviderName } from "./formatters";
+import { formatDateTime, formatUsd, prettifyStatus } from "@/src/lib/format";
+import { shortProviderName } from "./formatters";
 
 export type StepState = "done" | "current" | "pending";
 
@@ -18,14 +19,21 @@ export type EventCard = {
   severity?: "neutral" | "good" | "warn" | "bad";
 };
 
-export function buildProgressSteps(conversion: ConversionDto | null | undefined, timeline: ConversionTimelineItem[]): ProgressStep[] {
+export function buildProgressSteps(
+  conversion: ConversionDto | null | undefined,
+  timeline: ConversionTimelineItem[],
+): ProgressStep[] {
   const status = conversion?.status ?? "";
 
   const hasEventType = (type: string) => timeline.some((event) => event?.type === type);
 
-  const hasStatus = (target: string) => timeline.some((event) => event?.kind === "status" && event?.to === target);
+  const hasStatus = (target: string) =>
+    timeline.some((event) => event?.kind === "status" && event?.to === target);
 
-  const hasReachedWaitingForBank = hasEventType("WAITING_FOR_BANK") || conversion?.requiresBank === true || status === "PAYOUT_PENDING";
+  const hasReachedWaitingForBank =
+    hasEventType("WAITING_FOR_BANK") ||
+    conversion?.requiresBank === true ||
+    status === "PAYOUT_PENDING";
 
   const hasBankAttached = hasEventType("BANK_ATTACHED") || !conversion?.requiresBank;
 
@@ -41,7 +49,10 @@ export function buildProgressSteps(conversion: ConversionDto | null | undefined,
     hasEventType("STEP_DONE_SWAP") ||
     ["XRP_PURCHASED", "PAYOUT_PENDING", "PAYOUT_SUBMITTED", "COMPLETED"].includes(status);
 
-  const payoutSubmittedDone = hasStatus("PAYOUT_SUBMITTED") || hasEventType("STEP_DONE_PAYOUT") || ["PAYOUT_SUBMITTED", "COMPLETED"].includes(status);
+  const payoutSubmittedDone =
+    hasStatus("PAYOUT_SUBMITTED") ||
+    hasEventType("STEP_DONE_PAYOUT") ||
+    ["PAYOUT_SUBMITTED", "COMPLETED"].includes(status);
 
   const completedDone = hasStatus("COMPLETED") || status === "COMPLETED";
 
@@ -55,7 +66,9 @@ export function buildProgressSteps(conversion: ConversionDto | null | undefined,
     {
       key: "purchase",
       title: "XRP purchase in progress",
-      subtitle: purchaseDone ? "The asset purchase step has completed." : "We are pricing and executing the conversion.",
+      subtitle: purchaseDone
+        ? "The asset purchase step has completed."
+        : "We are pricing and executing the conversion.",
       state: purchaseDone ? "done" : quoteConfirmedDone ? "current" : "pending",
     },
     {
@@ -76,7 +89,11 @@ export function buildProgressSteps(conversion: ConversionDto | null | undefined,
         : hasBankAttached
           ? "We’re preparing the transfer to your linked bank."
           : "Payout starts after a bank account is attached.",
-      state: payoutSubmittedDone ? "done" : hasBankAttached && !completedDone ? "current" : "pending",
+      state: payoutSubmittedDone
+        ? "done"
+        : hasBankAttached && !completedDone
+          ? "current"
+          : "pending",
     },
     {
       key: "complete",
@@ -133,7 +150,8 @@ export function eventToCard(e: ConversionTimelineItem): EventCard {
 
   if (kind === "action") {
     const title = e?.title || "Action required";
-    const msg = e?.message || e?.reason || "We need a bank account linked before we can send your payout.";
+    const msg =
+      e?.message || e?.reason || "We need a bank account linked before we can send your payout.";
     return {
       title,
       subtitle: msg,
@@ -155,12 +173,17 @@ export function eventToCard(e: ConversionTimelineItem): EventCard {
   if (kind === "provider") {
     const provider = shortProviderName(e?.provider);
     const op = e?.op ? prettifyStatus(String(e.op)) : "operation";
-    const result = e?.result === "ok" || e?.result === "OK" ? "Succeeded" : e?.result ? String(e.result) : null;
+    const result =
+      e?.result === "ok" || e?.result === "OK" ? "Succeeded" : e?.result ? String(e.result) : null;
     const reason = e?.reason ? String(e.reason) : null;
 
     return {
       title: `Provider check: ${op}`,
-      subtitle: reason ? `${provider}: ${reason}` : result ? `${provider}: ${result}` : `${provider}: processing…`,
+      subtitle: reason
+        ? `${provider}: ${reason}`
+        : result
+          ? `${provider}: ${result}`
+          : `${provider}: processing…`,
       detail: e?.providerRef ? `Ref: ${e.providerRef} • ${at}` : at,
       severity: reason ? "warn" : "neutral",
     };

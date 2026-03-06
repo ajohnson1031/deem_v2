@@ -30,7 +30,14 @@ const queues = {
 type QueueName = keyof typeof queues;
 
 async function getQueueStats(q: Queue) {
-  const counts = await q.getJobCounts("active", "waiting", "delayed", "completed", "failed", "paused");
+  const counts = await q.getJobCounts(
+    "active",
+    "waiting",
+    "delayed",
+    "completed",
+    "failed",
+    "paused",
+  );
   // BullMQ also has getWorkers/getSchedulers in newer versions, but counts are most useful.
   return counts;
 }
@@ -62,7 +69,9 @@ export const adminRoutes: FastifyPluginAsync = async (app) => {
     await requireAdmin(req, reply);
     if (reply.sent) return;
 
-    const query = z.object({ limit: z.coerce.number().int().min(1).max(200).default(50) }).parse(req.query);
+    const query = z
+      .object({ limit: z.coerce.number().int().min(1).max(200).default(50) })
+      .parse(req.query);
 
     const ors = WATCHED_STATUSES.map((status) => ({
       status: status as any,
@@ -76,7 +85,15 @@ export const adminRoutes: FastifyPluginAsync = async (app) => {
       },
       orderBy: { updatedAt: "asc" },
       take: query.limit,
-      select: { id: true, userId: true, status: true, updatedAt: true, createdAt: true, failureReason: true, bankAccountId: true },
+      select: {
+        id: true,
+        userId: true,
+        status: true,
+        updatedAt: true,
+        createdAt: true,
+        failureReason: true,
+        bankAccountId: true,
+      },
     });
 
     return reply.send({ items: stuck });
@@ -115,7 +132,9 @@ export const adminRoutes: FastifyPluginAsync = async (app) => {
     if (reply.sent) return;
 
     const params = z.object({ id: z.string() }).parse(req.params);
-    const body = z.object({ reason: z.string().min(3).default("ADMIN_FORCE_FAIL") }).parse(req.body ?? {});
+    const body = z
+      .object({ reason: z.string().min(3).default("ADMIN_FORCE_FAIL") })
+      .parse(req.body ?? {});
 
     const conversion = await prisma.conversion.findUnique({ where: { id: params.id } });
     if (!conversion) return reply.code(404).send({ error: "NOT_FOUND" });
@@ -142,7 +161,10 @@ export const adminRoutes: FastifyPluginAsync = async (app) => {
     await requireAdmin(req, reply);
     if (reply.sent) return;
 
-    const [conversionCounts, watchdogCounts] = await Promise.all([getQueueStats(queues.conversion), getQueueStats(queues.watchdog)]);
+    const [conversionCounts, watchdogCounts] = await Promise.all([
+      getQueueStats(queues.conversion),
+      getQueueStats(queues.watchdog),
+    ]);
 
     return reply.send({
       queues: {
@@ -163,7 +185,9 @@ export const adminRoutes: FastifyPluginAsync = async (app) => {
     const params = z.object({ name: z.enum(["conversion", "watchdog"]) }).parse(req.params);
     const query = z
       .object({
-        state: z.enum(["active", "waiting", "delayed", "completed", "failed", "paused"]).default("failed"),
+        state: z
+          .enum(["active", "waiting", "delayed", "completed", "failed", "paused"])
+          .default("failed"),
         limit: z.coerce.number().int().min(1).max(200).default(20),
       })
       .parse(req.query);

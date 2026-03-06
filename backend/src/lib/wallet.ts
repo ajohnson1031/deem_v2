@@ -15,7 +15,14 @@ export async function getOrCreateWallet(prisma: PrismaClient, userId: string) {
  * Idempotently create a ledger entry and update cached wallet balance in a transaction.
  * Uses @@unique([walletId, refType, refId, type]) to prevent duplicates.
  */
-export async function applyLedgerEntry(args: { prisma: PrismaClient; walletId: string; type: LedgerEntryType; refType: LedgerRefType; refId: string; amountDrops: bigint }) {
+export async function applyLedgerEntry(args: {
+  prisma: PrismaClient;
+  walletId: string;
+  type: LedgerEntryType;
+  refType: LedgerRefType;
+  refId: string;
+  amountDrops: bigint;
+}) {
   const { prisma, walletId, type, refType, refId, amountDrops } = args;
 
   return prisma.$transaction(async (tx) => {

@@ -1,5 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, FlatList, Pressable, SafeAreaView, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Pressable,
+  SafeAreaView,
+  Text,
+  View,
+} from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { apiFetch } from "@/src/lib/api";
 import { useAuth } from "@/src/state/auth";
@@ -35,7 +43,10 @@ export default function CashoutScreen() {
       if (!token) return;
       setLoadingAccounts(true);
       try {
-        const res = await apiFetch<BankAccountsResponse>("/bank/accounts", { method: "GET", token });
+        const res = await apiFetch<BankAccountsResponse>("/bank/accounts", {
+          method: "GET",
+          token,
+        });
 
         const list = Array.isArray(res) ? res : (res as any).accounts;
         if (!cancelled) {
@@ -54,7 +65,10 @@ export default function CashoutScreen() {
     };
   }, [token]);
 
-  const selected = useMemo(() => accounts.find((a) => a.id === selectedId) ?? null, [accounts, selectedId]);
+  const selected = useMemo(
+    () => accounts.find((a) => a.id === selectedId) ?? null,
+    [accounts, selectedId],
+  );
 
   async function onCashout() {
     if (!token) return;
@@ -86,9 +100,20 @@ export default function CashoutScreen() {
   return (
     <SafeAreaView style={{ flex: 1, padding: 16 }}>
       <Text style={{ fontSize: 22, fontWeight: "800" }}>Cash out</Text>
-      <Text style={{ marginTop: 6, opacity: 0.75 }}>Choose a linked bank account to receive the payout.</Text>
+      <Text style={{ marginTop: 6, opacity: 0.75 }}>
+        Choose a linked bank account to receive the payout.
+      </Text>
 
-      <View style={{ marginTop: 16, borderWidth: 1, borderColor: "#333", borderRadius: 16, padding: 14, flex: 1 }}>
+      <View
+        style={{
+          marginTop: 16,
+          borderWidth: 1,
+          borderColor: "#333",
+          borderRadius: 16,
+          padding: 14,
+          flex: 1,
+        }}
+      >
         {loadingAccounts ? (
           <View style={{ paddingVertical: 10, alignItems: "center" }}>
             <ActivityIndicator />
@@ -100,7 +125,9 @@ export default function CashoutScreen() {
             <Text style={{ marginTop: 6, opacity: 0.8 }}>Link a bank first.</Text>
 
             <Pressable
-              onPress={() => router.push({ pathname: "/(app)/bank/link", params: { conversionId } })}
+              onPress={() =>
+                router.push({ pathname: "/(app)/bank/link", params: { conversionId } })
+              }
               style={{
                 marginTop: 12,
                 backgroundColor: "#fff",
@@ -134,7 +161,9 @@ export default function CashoutScreen() {
                     }}
                   >
                     <Text style={{ fontWeight: "900" }}>{item.displayLabel ?? "Bank Account"}</Text>
-                    <Text style={{ marginTop: 4, opacity: 0.75 }}>{item.masked ? `•••• ${item.masked}` : ""}</Text>
+                    <Text style={{ marginTop: 4, opacity: 0.75 }}>
+                      {item.masked ? `•••• ${item.masked}` : ""}
+                    </Text>
                   </Pressable>
                 );
               }}
@@ -142,7 +171,8 @@ export default function CashoutScreen() {
 
             <View style={{ marginTop: 14 }}>
               <Text style={{ opacity: 0.75 }}>
-                Sending to: <Text style={{ fontWeight: "900" }}>{selected?.displayLabel ?? "—"}</Text>
+                Sending to:{" "}
+                <Text style={{ fontWeight: "900" }}>{selected?.displayLabel ?? "—"}</Text>
               </Text>
 
               <Pressable
@@ -157,14 +187,21 @@ export default function CashoutScreen() {
                   opacity: loadingPayout ? 0.6 : 1,
                 }}
               >
-                {loadingPayout ? <ActivityIndicator /> : <Text style={{ fontWeight: "900" }}>Cash out</Text>}
+                {loadingPayout ? (
+                  <ActivityIndicator />
+                ) : (
+                  <Text style={{ fontWeight: "900" }}>Cash out</Text>
+                )}
               </Pressable>
             </View>
           </>
         )}
       </View>
 
-      <Pressable onPress={() => router.back()} style={{ marginTop: 16, paddingVertical: 12, alignItems: "center" }}>
+      <Pressable
+        onPress={() => router.back()}
+        style={{ marginTop: 16, paddingVertical: 12, alignItems: "center" }}
+      >
         <Text style={{ opacity: 0.7 }}>Back</Text>
       </Pressable>
     </SafeAreaView>

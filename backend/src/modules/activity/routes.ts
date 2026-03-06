@@ -10,7 +10,11 @@ function money(cents: number) {
 
 function summarizeConversion(c: any) {
   const hasBank = Boolean(c.bankAccountId) || Boolean(c.bankAccount);
-  const ui = getDisplayStatus({ status: c.status, hasBank, failureReason: c.failureReason ?? null });
+  const ui = getDisplayStatus({
+    status: c.status,
+    hasBank,
+    failureReason: c.failureReason ?? null,
+  });
 
   return {
     id: c.id,
@@ -26,9 +30,22 @@ function summarizeConversion(c: any) {
     netAmount: money(c.sourceAmountUsd - c.feesUsd),
     xrpAmount: c.xrpAmount ?? null,
 
-    giftCard: c.giftCard ? { id: c.giftCard.id, brand: c.giftCard.brand ?? null, last4: c.giftCard.last4 ?? null, type: c.giftCard.type } : null,
+    giftCard: c.giftCard
+      ? {
+          id: c.giftCard.id,
+          brand: c.giftCard.brand ?? null,
+          last4: c.giftCard.last4 ?? null,
+          type: c.giftCard.type,
+        }
+      : null,
 
-    bankAccount: c.bankAccount ? { id: c.bankAccount.id, provider: c.bankAccount.provider, last4: c.bankAccount.last4 ?? null } : null,
+    bankAccount: c.bankAccount
+      ? {
+          id: c.bankAccount.id,
+          provider: c.bankAccount.provider,
+          last4: c.bankAccount.last4 ?? null,
+        }
+      : null,
 
     failureReason: c.failureReason ?? null,
   };

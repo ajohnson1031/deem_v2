@@ -1,5 +1,9 @@
 import { apiFetch } from "@/src/lib/api";
-import type { BankAccountsResponse, LinkCompleteResponse, LinkStartResponse } from "@/src/lib/contracts";
+import type {
+  BankAccountsResponse,
+  LinkCompleteResponse,
+  LinkStartResponse,
+} from "@/src/lib/contracts";
 
 export type GetBankAccountsInput = {
   token: string;

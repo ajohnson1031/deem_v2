@@ -1,7 +1,11 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo } from "react";
-import { ActivityIndicator, FlatList, Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, SafeAreaView, ScrollView, Text, View } from "react-native";
 
+import { useConversionTimeline } from "@/src/hooks/useConversionTimeline";
+import { useAuth } from "@/src/state/auth";
+
+import { PrimaryButton, ScreenHeader, SectionCard } from "@/src/components/ui";
 import {
   MostRecentUpdateCard,
   ProgressBar,
@@ -10,11 +14,10 @@ import {
   buildProgressSteps,
   estimateRemainingMs,
   formatDurationMs,
-  formatUsd,
   prettifyStatus,
 } from "@/src/features/conversions";
-import { useConversionTimeline } from "@/src/hooks/useConversionTimeline";
-import { useAuth } from "@/src/state/auth";
+
+import { formatUsd } from "@/src/lib/format";
 
 export default function ConversionStatusScreen() {
   const router = useRouter();
@@ -34,7 +37,8 @@ export default function ConversionStatusScreen() {
 
   const steps = useMemo(() => buildProgressSteps(conversion, timeline), [conversion, timeline]);
 
-  const percent = typeof conversion?.processingPercent === "number" ? conversion.processingPercent : 0;
+  const percent =
+    typeof conversion?.processingPercent === "number" ? conversion.processingPercent : 0;
 
   const isFailed = Boolean(conversion?.failureReason) || conversion?.status === "FAILED";
 
@@ -44,7 +48,12 @@ export default function ConversionStatusScreen() {
   }, [timeline]);
 
   const remainingMs = useMemo(
-    () => estimateRemainingMs(conversion?.processingPercent, conversion?.createdAt, conversion?.isTerminal),
+    () =>
+      estimateRemainingMs(
+        conversion?.processingPercent,
+        conversion?.createdAt,
+        conversion?.isTerminal,
+      ),
     [conversion?.processingPercent, conversion?.createdAt, conversion?.isTerminal],
   );
 
@@ -58,17 +67,9 @@ export default function ConversionStatusScreen() {
           paddingBottom: 28,
         }}
       >
-        <Text style={{ fontSize: 22, fontWeight: "800" }}>Conversion</Text>
+        <ScreenHeader title="Conversion" />
 
-        <View
-          style={{
-            marginTop: 12,
-            borderWidth: 1,
-            borderColor: "#333",
-            borderRadius: 18,
-            padding: 16,
-          }}
-        >
+        <SectionCard style={{ marginTop: 12 }}>
           {loading && !conversion ? (
             <View style={{ paddingVertical: 12, alignItems: "center" }}>
               <ActivityIndicator />
@@ -76,7 +77,9 @@ export default function ConversionStatusScreen() {
             </View>
           ) : (
             <>
-              <Text style={{ fontSize: 20, fontWeight: "800" }}>{conversion?.displayStatus ?? "Processing"}</Text>
+              <Text style={{ fontSize: 20, fontWeight: "800" }}>
+                {conversion?.displayStatus ?? "Processing"}
+              </Text>
 
               {!!conversion?.displaySubtitle ? (
                 <Text
@@ -92,129 +95,89 @@ export default function ConversionStatusScreen() {
 
               <ProgressBar percent={percent} />
 
-              <View
-                style={{
-                  marginTop: 12,
-                  borderWidth: 1,
-                  borderColor: "#333",
-                  borderRadius: 14,
-                  padding: 12,
-                }}
-              >
+              <SectionCard style={{ marginTop: 12 }}>
                 <Text style={{ fontWeight: "800" }}>Estimated time</Text>
                 <Text style={{ marginTop: 6, opacity: 0.78 }}>
-                  {conversion?.isTerminal ? "Complete" : conversion?.requiresBank ? "Waiting on bank link" : formatDurationMs(remainingMs)}
+                  {conversion?.isTerminal
+                    ? "Complete"
+                    : conversion?.requiresBank
+                      ? "Waiting on bank link"
+                      : formatDurationMs(remainingMs)}
                 </Text>
-                <Text style={{ marginTop: 6, opacity: 0.6, fontSize: 12 }}>This is a simple estimate based on elapsed time and current progress.</Text>
-              </View>
+                <Text style={{ marginTop: 6, opacity: 0.6, fontSize: 12 }}>
+                  This is a simple estimate based on elapsed time and current progress.
+                </Text>
+              </SectionCard>
 
               <View style={{ marginTop: 14 }}>
-                <Text style={{ opacity: 0.82 }}>Source: {formatUsd(conversion?.sourceAmount?.cents)}</Text>
-                <Text style={{ opacity: 0.82, marginTop: 4 }}>Fees: {formatUsd(conversion?.fees?.cents)}</Text>
-                <Text style={{ opacity: 0.82, marginTop: 4 }}>Net: {formatUsd(conversion?.netAmount?.cents)}</Text>
-                <Text style={{ opacity: 0.82, marginTop: 4 }}>XRP: {typeof conversion?.xrpAmount === "number" ? conversion.xrpAmount : "—"}</Text>
-                <Text style={{ opacity: 0.62, marginTop: 8, fontSize: 12 }}>Internal status: {prettifyStatus(conversion?.status)}</Text>
+                <Text style={{ opacity: 0.82 }}>
+                  Source: {formatUsd(conversion?.sourceAmount?.cents)}
+                </Text>
+                <Text style={{ opacity: 0.82, marginTop: 4 }}>
+                  Fees: {formatUsd(conversion?.fees?.cents)}
+                </Text>
+                <Text style={{ opacity: 0.82, marginTop: 4 }}>
+                  Net: {formatUsd(conversion?.netAmount?.cents)}
+                </Text>
+                <Text style={{ opacity: 0.82, marginTop: 4 }}>
+                  XRP: {typeof conversion?.xrpAmount === "number" ? conversion.xrpAmount : "—"}
+                </Text>
+                <Text style={{ opacity: 0.62, marginTop: 8, fontSize: 12 }}>
+                  Internal status: {prettifyStatus(conversion?.status)}
+                </Text>
               </View>
 
               {!!conversion?.failureReason ? (
-                <View
-                  style={{
-                    marginTop: 14,
-                    borderWidth: 1,
-                    borderColor: "#333",
-                    borderRadius: 14,
-                    padding: 12,
-                  }}
-                >
+                <SectionCard style={{ marginTop: 14 }}>
                   <Text style={{ fontWeight: "800" }}>What happened</Text>
                   <Text style={{ marginTop: 6, opacity: 0.8 }}>{conversion.failureReason}</Text>
-                </View>
+                </SectionCard>
               ) : null}
 
               {!!error ? <Text style={{ marginTop: 12, opacity: 0.75 }}>{error}</Text> : null}
 
               {conversion?.requiresBank && !conversion?.isTerminal ? (
-                <Pressable
+                <PrimaryButton
+                  label="Link bank to continue"
                   onPress={() =>
                     router.push({
                       pathname: "/(app)/bank/link",
                       params: { conversionId },
                     })
                   }
-                  style={{
-                    marginTop: 16,
-                    backgroundColor: "#fff",
-                    borderRadius: 14,
-                    paddingVertical: 14,
-                    alignItems: "center",
-                  }}
-                >
-                  <Text style={{ fontWeight: "900" }}>Link bank to continue</Text>
-                </Pressable>
+                  style={{ marginTop: 16 }}
+                />
               ) : null}
 
               {canViewReceipt ? (
-                <Pressable
+                <PrimaryButton
+                  label="View receipt"
                   onPress={() =>
                     router.replace({
                       pathname: "/(app)/receipt/[id]",
                       params: { id: conversion?.id ?? "" },
                     })
                   }
-                  style={{
-                    marginTop: 12,
-                    backgroundColor: "#fff",
-                    borderRadius: 14,
-                    paddingVertical: 14,
-                    alignItems: "center",
-                  }}
-                >
-                  <Text style={{ fontWeight: "900" }}>View receipt</Text>
-                </Pressable>
+                  style={{ marginTop: 12 }}
+                />
               ) : null}
 
               <View style={{ flexDirection: "row", gap: 10, marginTop: 14 }}>
-                <Pressable
-                  onPress={refresh}
-                  style={{
-                    flex: 1,
-                    backgroundColor: "#fff",
-                    borderRadius: 14,
-                    paddingVertical: 12,
-                    alignItems: "center",
-                  }}
-                >
-                  <Text style={{ fontWeight: "800" }}>Refresh</Text>
-                </Pressable>
+                <PrimaryButton label="Refresh" onPress={refresh} style={{ flex: 1 }} />
 
-                <Pressable
+                <PrimaryButton
+                  label="Home"
                   onPress={() => router.replace("/(app)")}
-                  style={{
-                    flex: 1,
-                    backgroundColor: "#fff",
-                    borderRadius: 14,
-                    paddingVertical: 12,
-                    alignItems: "center",
-                  }}
-                >
-                  <Text style={{ fontWeight: "800" }}>Home</Text>
-                </Pressable>
+                  style={{ flex: 1 }}
+                />
               </View>
             </>
           )}
-        </View>
+        </SectionCard>
 
         {mostRecentEvent ? <MostRecentUpdateCard event={mostRecentEvent} /> : null}
 
-        <View
-          style={{
-            marginTop: 16,
-            borderWidth: 1,
-            borderColor: "#333",
-            borderRadius: 18,
-            padding: 16,
-          }}
-        >
+        <SectionCard style={{ marginTop: 16 }}>
           <Text style={{ fontSize: 17, fontWeight: "800" }}>Processing steps</Text>
           <Text
             style={{
@@ -231,17 +194,9 @@ export default function ConversionStatusScreen() {
               <StepRow key={step.key} step={step} />
             ))}
           </View>
-        </View>
+        </SectionCard>
 
-        <View
-          style={{
-            marginTop: 16,
-            borderWidth: 1,
-            borderColor: "#333",
-            borderRadius: 18,
-            padding: 16,
-          }}
-        >
+        <SectionCard style={{ marginTop: 16 }}>
           <Text style={{ fontSize: 17, fontWeight: "800" }}>Updates</Text>
           <Text
             style={{
@@ -266,26 +221,19 @@ export default function ConversionStatusScreen() {
               </View>
             }
           />
-        </View>
+        </SectionCard>
 
         {!loading && conversion?.isTerminal && !isFailed ? (
-          <Pressable
+          <PrimaryButton
+            label="Done"
             onPress={() =>
               router.replace({
                 pathname: "/(app)/receipt/[id]",
                 params: { id: conversion?.id ?? "" },
               })
             }
-            style={{
-              marginTop: 16,
-              backgroundColor: "#fff",
-              borderRadius: 14,
-              paddingVertical: 14,
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ fontWeight: "900" }}>Done</Text>
-          </Pressable>
+            style={{ marginTop: 16 }}
+          />
         ) : null}
       </ScrollView>
     </SafeAreaView>
