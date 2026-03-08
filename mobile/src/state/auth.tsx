@@ -1,67 +1,119 @@
 import * as SecureStore from "expo-secure-store";
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 
-type AuthState = {
-  initialized: boolean;
+import { STORAGE_KEYS } from "@/src/lib/storageKeys";
+
+type KycStatus = "NOT_STARTED" | "PENDING" | "VERIFIED" | "REJECTED" | null;
+
+type AuthContextValue = {
+  booting: boolean;
   token: string | null;
   userId: string | null;
-  kycStatus: "NOT_STARTED" | "PENDING" | "VERIFIED" | "REJECTED" | null;
-  setSession: (args: {
-    token: string;
-    userId: string;
-    kycStatus: AuthState["kycStatus"];
-  }) => Promise<void>;
+  kycStatus: KycStatus;
+  isAuthenticated: boolean;
+  signIn: (payload: { token: string; userId: string; kycStatus?: KycStatus }) => Promise<void>;
   signOut: () => Promise<void>;
+  setKycStatus: (value: KycStatus) => Promise<void>;
 };
 
-const TOKEN_KEY = "deem:token";
-const USER_ID_KEY = "deem:userId";
-const KYC_KEY = "deem:kycStatus";
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-const AuthContext = createContext<AuthState | null>(null);
+async function setStoredItem(key: string, value: string | null) {
+  if (!value) {
+    await SecureStore.deleteItemAsync(key);
+    return;
+  }
+
+  await SecureStore.setItemAsync(key, value);
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [initialized, setInitialized] = useState(false);
+  const [booting, setBooting] = useState(true);
   const [token, setToken] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [kycStatus, setKycStatus] = useState<AuthState["kycStatus"]>(null);
+  const [kycStatus, setKycStatusState] = useState<KycStatus>(null);
 
   useEffect(() => {
-    (async () => {
-      const t = await SecureStore.getItemAsync(TOKEN_KEY);
-      const u = await SecureStore.getItemAsync(USER_ID_KEY);
-      const k = await SecureStore.getItemAsync(KYC_KEY);
+    let cancelled = false;
 
-      setToken(t ?? null);
-      setUserId(u ?? null);
-      setKycStatus((k as any) ?? null);
-      setInitialized(true);
-    })();
+    async function hydrate() {
+      try {
+        const [storedToken, storedUserId, storedKyc] = await Promise.all([
+          SecureStore.getItemAsync(STORAGE_KEYS.TOKEN),
+          SecureStore.getItemAsync(STORAGE_KEYS.USER_ID),
+          SecureStore.getItemAsync(STORAGE_KEYS.KYC_STATUS),
+        ]);
+
+        if (cancelled) return;
+
+        setToken(storedToken ?? null);
+        setUserId(storedUserId ?? null);
+        setKycStatusState((storedKyc as KycStatus) ?? null);
+      } catch (error) {
+        console.warn("Failed to hydrate auth state from SecureStore", error);
+
+        if (cancelled) return;
+
+        setToken(null);
+        setUserId(null);
+        setKycStatusState(null);
+      } finally {
+        if (!cancelled) {
+          setBooting(false);
+        }
+      }
+    }
+
+    hydrate();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const setSession: AuthState["setSession"] = async ({ token, userId, kycStatus }) => {
-    setToken(token);
-    setUserId(userId);
-    setKycStatus(kycStatus);
+  async function signIn(payload: { token: string; userId: string; kycStatus?: KycStatus }) {
+    const nextKyc = payload.kycStatus ?? null;
 
-    await SecureStore.setItemAsync(TOKEN_KEY, token);
-    await SecureStore.setItemAsync(USER_ID_KEY, userId);
-    await SecureStore.setItemAsync(KYC_KEY, kycStatus ?? "");
-  };
+    await Promise.all([
+      setStoredItem(STORAGE_KEYS.TOKEN, payload.token),
+      setStoredItem(STORAGE_KEYS.USER_ID, payload.userId),
+      setStoredItem(STORAGE_KEYS.KYC_STATUS, nextKyc),
+    ]);
 
-  const signOut: AuthState["signOut"] = async () => {
+    setToken(payload.token);
+    setUserId(payload.userId);
+    setKycStatusState(nextKyc);
+  }
+
+  async function signOut() {
+    await Promise.all([
+      SecureStore.deleteItemAsync(STORAGE_KEYS.TOKEN),
+      SecureStore.deleteItemAsync(STORAGE_KEYS.USER_ID),
+      SecureStore.deleteItemAsync(STORAGE_KEYS.KYC_STATUS),
+    ]);
+
     setToken(null);
     setUserId(null);
-    setKycStatus(null);
+    setKycStatusState(null);
+  }
 
-    await SecureStore.deleteItemAsync(TOKEN_KEY);
-    await SecureStore.deleteItemAsync(USER_ID_KEY);
-    await SecureStore.deleteItemAsync(KYC_KEY);
-  };
+  async function setKycStatus(value: KycStatus) {
+    await setStoredItem(STORAGE_KEYS.KYC_STATUS, value);
+    setKycStatusState(value);
+  }
 
-  const value = useMemo<AuthState>(
-    () => ({ initialized, token, userId, kycStatus, setSession, signOut }),
-    [initialized, token, userId, kycStatus],
+  const value = useMemo<AuthContextValue>(
+    () => ({
+      booting,
+      token,
+      userId,
+      kycStatus,
+      isAuthenticated: Boolean(token),
+      signIn,
+      signOut,
+      setKycStatus,
+    }),
+    [booting, token, userId, kycStatus],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -69,6 +121,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+
+  if (!ctx) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+
   return ctx;
 }

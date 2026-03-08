@@ -24,8 +24,8 @@
     "prepare": "husky",
     "infra:up": "docker compose -f backend/docker-compose.yml up -d",
     "infra:down": "docker compose -f backend/docker-compose.yml down",
-    "prisma:migrate": "prisma migrate dev --config prisma.config.ts",
-    "prisma:generate": "prisma generate --config prisma.config.ts"
+    "db:migrate": "prisma migrate dev --config prisma.config.ts",
+    "db:generate": "prisma generate --config prisma.config.ts"
   },
   "lint-staged": {
     "*.{ts,tsx,js,json,md}": [
